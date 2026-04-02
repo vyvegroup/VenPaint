@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:venpaint/models/brush.dart';
 import 'package:venpaint/models/canvas_state.dart';
+import 'package:venpaint/models/layer.dart';
+import 'package:venpaint/services/brush_qr_service.dart';
 import 'package:venpaint/services/ipbz_service.dart';
 import 'dart:typed_data';
 import 'dart:convert';
