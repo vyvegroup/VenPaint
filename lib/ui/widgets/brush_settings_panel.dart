@@ -115,7 +115,7 @@ class _BrushSettingsPanelState extends State<BrushSettingsPanel> {
         final isActive = widget.state.currentBrush.brushType == type.$1;
         return Material(
           color: isActive
-              ? const Color(0xFFE94560).withValues(alpha: 0.2)
+              ? const Color(0xFFE94560).withOpacity(0.2)
               : const Color(0xFF2A2A3E),
           borderRadius: BorderRadius.circular(8),
           child: InkWell(
@@ -205,7 +205,7 @@ class _BrushSettingsPanelState extends State<BrushSettingsPanel> {
         final isActive = widget.state.currentBrush.id == preset.id;
         return Material(
           color: isActive
-              ? const Color(0xFFE94560).withValues(alpha: 0.15)
+              ? const Color(0xFFE94560).withOpacity(0.15)
               : const Color(0xFF2A2A3E),
           borderRadius: BorderRadius.circular(8),
           child: InkWell(

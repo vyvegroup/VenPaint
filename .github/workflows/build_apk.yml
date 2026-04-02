@@ -1,0 +1,88 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '17'
+  FLUTTER_VERSION: '3.22.0'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'zulu'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate app icons (skip if not configured)
+        run: echo "Skipping icon generation"
+
+      - name: Build APK (release)
+        run: flutter build apk --release --target-platform android-arm64
+
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/flutter-apk/VenPaint-${{ github.ref_name }}-${{ github.sha_short }}.apk
+
+      - name: Get short SHA
+        id: sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VenPaint-APK
+          path: build/app/outputs/flutter-apk/VenPaint-*.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/VenPaint-*.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          title: "VenPaint ${{ github.ref_name }}"
+          body: |
+            ## VenPaint Release ${{ github.ref_name }}
+
+            Professional drawing app with ibisPaint brush QR compatibility.
+
+            ### Features
+            - Multiple brush types (Pen, Pencil, Airbrush, Watercolor, Oil, Eraser)
+            - Brush QR code generation and scanning (ibisPaint compatible)
+            - .ipv file import/export
+            - Layer system with blend modes
+            - Undo/Redo support
+            - Color picker with HSV wheel
+            - Flood fill tool
+            - Pinch-to-zoom navigation
+
+            ### Installation
+            Download the APK below and install on your Android device.
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

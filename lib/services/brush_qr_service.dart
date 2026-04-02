@@ -29,11 +29,11 @@ class BrushQrService {
       size: size,
       backgroundColor: Colors.white,
       eyeStyle: const QrEyeStyle(
-        eyeShape: QrEyeShape.roundedOuter,
+        eyeShape: QrEyeShape.square,
         color: Color(0xFF1A1A2E),
       ),
       dataModuleStyle: const QrDataModuleStyle(
-        dataModuleShape: QrDataModuleShape.roundedOuter,
+        dataModuleShape: QrDataModuleShape.square,
         color: Color(0xFF1A1A2E),
       ),
       padding: const EdgeInsets.all(16),

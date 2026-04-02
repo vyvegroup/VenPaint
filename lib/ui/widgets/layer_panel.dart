@@ -227,7 +227,7 @@ class _LayerItem extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: isActive
-                ? const Color(0xFFE94560).withValues(alpha: 0.15)
+                ? const Color(0xFFE94560).withOpacity(0.15)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: isActive
@@ -380,8 +380,8 @@ class _LayerThumbnailPainter extends CustomPainter {
     // Draw checkerboard background for transparency indication
     final checkerPaint = Paint();
     const checkSize = 6.0;
-    for (int y = 0; y < size.height; y += checkSize) {
-      for (int x = 0; x < size.width; x += checkSize) {
+    for (double y = 0; y < size.height; y += checkSize) {
+      for (double x = 0; x < size.width; x += checkSize) {
         final isEven = ((x / checkSize).floor() + (y / checkSize).floor()) % 2 == 0;
         checkerPaint.color = isEven
             ? const Color(0xFF444444)
@@ -407,8 +407,8 @@ class _LayerThumbnailPainter extends CustomPainter {
       final scaleY = layer.height / size.height;
       final samplePaint = Paint();
 
-      for (int sy = 0; sy < size.height; sy += 2) {
-        for (int sx = 0; sx < size.width; sx += 2) {
+      for (double sy = 0; sy < size.height; sy += 2) {
+        for (double sx = 0; sx < size.width; sx += 2) {
           final px = (sx * scaleX).round().clamp(0, layer.width - 1);
           final py = (sy * scaleY).round().clamp(0, layer.height - 1);
           final color = layer.getPixelAt(px, py);

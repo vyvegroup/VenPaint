@@ -151,9 +151,9 @@ class _BrushQrDialogState extends State<BrushQrDialog>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF533483).withValues(alpha: 0.2),
+              color: const Color(0xFF533483).withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF533483).withValues(alpha: 0.3)),
+              border: Border.all(color: const Color(0xFF533483).withOpacity(0.3)),
             ),
             child: Row(
               children: [
@@ -321,7 +321,7 @@ class _BrushQrDialogState extends State<BrushQrDialog>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '#${_scannedBrush!.color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+                              '#${_scannedBrush!.color.value.toRadixString(16).substring(2).toUpperCase()}',
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 12,
@@ -391,7 +391,7 @@ class _BrushQrDialogState extends State<BrushQrDialog>
                   Icon(
                     Icons.qr_code_scanner,
                     size: 64,
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity(0.3),
                   ),
                   const SizedBox(height: 16),
                   const Text(

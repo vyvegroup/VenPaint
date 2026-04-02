@@ -157,13 +157,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(2, 2),
           ),
         ],
       ),
-      child: const CustomPaint(
+      child: CustomPaint(
         painter: _CanvasPainter(),
       ),
     );
@@ -176,7 +176,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         color: const Color(0xFF1A1A2E),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -325,7 +325,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         color: const Color(0xFF1A1A2E),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -381,11 +381,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         border: Border(
-          left: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          left: BorderSide(color: Colors.white.withOpacity(0.1)),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(-2, 0),
           ),
@@ -398,7 +398,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             height: 40,
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                bottom: BorderSide(color: Colors.white.withOpacity(0.1)),
               ),
             ),
             child: Row(
@@ -483,7 +483,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         state.setPrimaryColor(color);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Color picked: ${color.toARGB32().toRadixString(16).toUpperCase()}'),
+            content: Text('Color picked: ${color.value.toRadixString(16).toUpperCase()}'),
             duration: const Duration(seconds: 1),
           ),
         );
@@ -624,7 +624,7 @@ class _ToolbarButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFFE94560).withValues(alpha: 0.2)
+              ? const Color(0xFFE94560).withOpacity(0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: isActive
@@ -710,8 +710,8 @@ class _CanvasPainter extends CustomPainter {
     // Draw checkerboard pattern for transparency (subtle)
     final checkPaint = Paint();
     const checkSize = 10.0;
-    for (int y = 0; y < size.height; y += checkSize) {
-      for (int x = 0; x < size.width; x += checkSize) {
+    for (double y = 0; y < size.height; y += checkSize) {
+      for (double x = 0; x < size.width; x += checkSize) {
         final isEven = ((x / checkSize).floor() + (y / checkSize).floor()) % 2 == 0;
         checkPaint.color = isEven
             ? const Color(0xFFF8F8F8)

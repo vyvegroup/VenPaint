@@ -216,7 +216,7 @@ class _ColorPickerWidgetState extends State<ColorPickerWidget> {
               color: color,
               borderRadius: BorderRadius.circular(3),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity(0.2),
               ),
             ),
           ),

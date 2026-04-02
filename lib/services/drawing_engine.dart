@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -464,14 +465,22 @@ class DrawingEngine {
       _compositeLayerOnBuffer(pixelData, layer, width, height);
     }
 
-    final bytes = await ui.decodeImageFromPixels(
-      pixelData,
-      width,
-      height,
-      ui.PixelFormat.rgba8888,
-    );
+    final completer = Completer<ui.Image?>();
+    try {
+      ui.decodeImageFromPixels(
+        pixelData,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        (ui.Image image) {
+          completer.complete(image);
+        },
+      );
+    } catch (_) {
+      return null;
+    }
 
-    return bytes;
+    return completer.future;
   }
 
   void _compositeLayerOnBuffer(Uint8List target, ArtLayer layer, int width, int height) {
@@ -502,12 +511,17 @@ class DrawingEngine {
   Future<ui.Image?> layerToImage(ArtLayer layer) async {
     if (layer.pixels == null) return null;
     try {
-      return await ui.decodeImageFromPixels(
+      final completer = Completer<ui.Image?>();
+      ui.decodeImageFromPixels(
         layer.pixels!,
         layer.width,
         layer.height,
         ui.PixelFormat.rgba8888,
+        (ui.Image image) {
+          completer.complete(image);
+        },
       );
+      return completer.future;
     } catch (_) {
       return null;
     }

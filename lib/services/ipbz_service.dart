@@ -1,7 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../models/brush.dart';
+
+/// Raw zlib/deflate codec for IPBZ compression.
+/// Uses dart:io GZipCodec which is available on all platforms.
+final _gzip = gzip;
 
 /// Service for encoding and decoding IPBZ/VPBZ brush QR code data.
 ///
@@ -151,7 +156,7 @@ class IpbzService {
   /// Compresses data using zlib (gzip codec stripped of header/footer).
   static Uint8List _compressZlib(List<int> data) {
     try {
-      final compressed = gzip.encode(Uint8List.fromList(data));
+      final compressed = _gzip.encode(Uint8List.fromList(data));
       // Strip gzip header (10 bytes) and footer (8 bytes) to get raw deflate
       if (compressed.length > 18) {
         return Uint8List.fromList(compressed.sublist(10, compressed.length - 8));
@@ -176,7 +181,7 @@ class IpbzService {
       ]);
       final footer = Uint8List(8); // CRC32 + size (will be validated)
       final fullGzip = Uint8List.fromList([...header, ...data, ...footer]);
-      return Uint8List.fromList(gzip.decode(fullGzip));
+      return Uint8List.fromList(_gzip.decode(fullGzip));
     } catch (_) {
       return Uint8List.fromList(data);
     }

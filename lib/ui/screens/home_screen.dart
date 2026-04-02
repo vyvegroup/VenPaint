@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/canvas_state.dart';
+import '../../models/canvas_state.dart';
 import 'canvas_screen.dart';
 
 /// Home screen showing the project gallery and create/import options.
@@ -319,8 +319,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFF1A1A2E),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A2E),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(

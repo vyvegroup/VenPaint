@@ -53,7 +53,7 @@ class IpvService {
     if (bytes.length < 4) {
       throw const FormatException('IPV file too small');
     }
-    if (!const List<int>.generate(4, (i) => bytes[i]).eq(ipvMagic)) {
+    if (!List<int>.generate(4, (i) => bytes[i]).eq(ipvMagic)) {
       // Try parsing without strict magic check for variant formats
     }
 
@@ -365,6 +365,14 @@ class IpvService {
     output.addByte(data.getUint8(2));
     output.addByte(data.getUint8(3));
   }
+}
+
+/// Internal chunk representation for IPV binary parsing.
+class _IpvChunk {
+  final int id;
+  final List<int> data;
+
+  const _IpvChunk({required this.id, required this.data});
 }
 
 /// Result of importing an IPV file.

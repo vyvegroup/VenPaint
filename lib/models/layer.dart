@@ -39,7 +39,8 @@ class ArtLayer {
     this.height = 1920,
     this.offsetX = 0.0,
     this.offsetY = 0.0,
-  }) : _image = image;
+  })  : id = id ?? '',
+        _image = image;
 
   ui.Image? get image => _image;
 
