@@ -422,6 +422,12 @@ class CanvasState extends ChangeNotifier {
     _activeLayerIndex = snapshot.activeLayerIndex.clamp(0, _layers.length - 1);
   }
 
+  /// Triggers a UI refresh notification.
+  ///
+  /// Use this from outside the class instead of calling [notifyListeners]
+  /// directly, since [notifyListeners] is a protected member of [ChangeNotifier].
+  void refresh() => notifyListeners();
+
   /// Creates a new blank canvas project.
   void newProject({int width = 1080, int height = 1920, String name = 'Untitled'}) {
     _layers.clear();

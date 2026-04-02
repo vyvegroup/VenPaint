@@ -167,23 +167,4 @@ class IpbzService {
     }
   }
 
-  /// Decompresses raw deflate data back to original bytes.
-  static Uint8List _decompressZlib(List<int> data) {
-    try {
-      // Reconstruct gzip stream by adding header and footer
-      final header = Uint8List.fromList([
-        0x1F, 0x8B, // Magic number
-        0x08, // Compression method (deflate)
-        0x00, // Flags
-        0x00, 0x00, 0x00, 0x00, // Modification time
-        0x00, // Extra flags
-        0xFF, // OS (unknown)
-      ]);
-      final footer = Uint8List(8); // CRC32 + size (will be validated)
-      final fullGzip = Uint8List.fromList([...header, ...data, ...footer]);
-      return Uint8List.fromList(_gzip.decode(fullGzip));
-    } catch (_) {
-      return Uint8List.fromList(data);
-    }
-  }
 }

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/canvas_state.dart';
@@ -41,9 +40,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // Transformation state
   double _zoom = 1.0;
   Offset _panOffset = Offset.zero;
-
-  // Drawing state
-  Offset? _lastPointerPosition;
 
   @override
   void initState() {
@@ -474,7 +470,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   void _onPanStart(DragStartDetails details) {
     final canvasPos = _screenToCanvas(details.localPosition);
-    _lastPointerPosition = canvasPos;
 
     final state = context.read<CanvasState>();
     if (state.currentTool == DrawingTool.eyedropper) {
@@ -505,7 +500,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   void _onPanUpdate(DragUpdateDetails details) {
     final canvasPos = _screenToCanvas(details.localPosition);
-    _lastPointerPosition = canvasPos;
 
     final state = context.read<CanvasState>();
     if (state.currentTool == DrawingTool.fill ||

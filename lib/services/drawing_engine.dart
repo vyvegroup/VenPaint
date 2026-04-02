@@ -93,7 +93,7 @@ class DrawingEngine {
     if (_currentStroke == null || _state == null) return;
     _state!.saveSnapshot();
     _currentStroke = null;
-    _state!.notifyListeners();
+    _state!.refresh();
   }
 
   /// Cancels the current stroke without saving.
@@ -423,7 +423,7 @@ class DrawingEngine {
     }
 
     _state!.saveSnapshot();
-    _state!.notifyListeners();
+    _state!.refresh();
   }
 
   bool _colorsMatch(int r, int g, int b, int a, Color target, int tolerance) {
@@ -489,8 +489,6 @@ class DrawingEngine {
 
     final layerOpacity = (layer.opacity * 255).round();
     if (layerOpacity == 0) return;
-
-    final invOpacity = 255 - layerOpacity;
 
     for (int i = 0; i < target.length && i < src.length; i += 4) {
       final sa = (src[i + 3] * layerOpacity) ~/ 255;

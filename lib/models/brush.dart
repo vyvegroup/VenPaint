@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 /// Represents a brush with full parameter set for professional drawing.
@@ -127,7 +126,7 @@ class VenBrush {
     }
 
     // Read version (2 bytes)
-    final version = (data[4] << 8) | data[5];
+    final _version = (data[4] << 8) | data[5];
 
     int compressedDataOffset;
     Uint8List compressedBytes;

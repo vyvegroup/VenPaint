@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/canvas_state.dart';
-import '../../models/brush.dart';
 
 /// Brush customization panel with sliders and presets.
 ///
@@ -85,7 +84,7 @@ class _BrushSettingsPanelState extends State<BrushSettingsPanel> {
           value: widget.state.currentBrush.scatter,
           min: 0,
           max: 20.0,
-          label: '${widget.state.currentBrush.scatter.toStringAsFixed(1)}',
+          label: widget.state.currentBrush.scatter.toStringAsFixed(1),
           onChanged: (value) => widget.state.updateBrush(scatter: value),
         ),
         const SizedBox(height: 20),

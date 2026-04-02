@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import '../models/canvas_state.dart';
 import '../models/layer.dart';
@@ -149,7 +148,7 @@ class IpvService {
       final name = utf8.decode(nameBytes);
       final opacity = reader.readFloat32BE();
       final visible = reader.readUint8() != 0;
-      final blendModeIndex = reader.readUint16BE();
+      final _blendModeIndex = reader.readUint16BE();
       final locked = reader.readUint8() != 0;
       final isBackground = reader.readUint8() != 0;
       final layerWidth = reader.readInt32BE();

@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../models/canvas_state.dart';
 import '../../models/layer.dart';
@@ -324,7 +323,7 @@ class _LayerItem extends StatelessWidget {
                       break;
                     case 'clear':
                       layer.clear();
-                      state.notifyListeners();
+                      state.refresh();
                       break;
                   }
                 },
