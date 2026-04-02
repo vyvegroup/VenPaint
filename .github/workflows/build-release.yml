@@ -1,0 +1,67 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          name: VenPaint ${{ steps.version.outputs.VERSION || '1.0.0' }}
+          body: |
+            ## VenPaint - Professional Drawing App
+
+            ### Features:
+            - 🎨 Full-featured drawing canvas with multiple brush types
+            - 📱 Brush QR code: Create & Scan (ibisPaint IPBZ compatible!)
+            - 📂 Import/Export .ipv files (ibisPaint artwork format)
+            - 🎭 Layer system with blend modes
+            - 🎯 6 brush types: Pen, Pencil, Airbrush, Watercolor, Oil, Eraser
+            - ↩️ Undo/Redo support
+            - 🎨 Advanced color picker
+            - 📐 Custom canvas sizes
+            - 💾 Export as PNG
+
+            ### Installation:
+            1. Download the APK file below
+            2. Enable "Install from unknown sources" on your device
+            3. Install the APK
+
+            **Note**: No login required. All features are free!
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
