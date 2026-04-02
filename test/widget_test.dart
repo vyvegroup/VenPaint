@@ -100,7 +100,7 @@ void main() {
       );
 
       final data = IpbzService.generateVpbzData(original);
-      final restored = VenBrush.fromIpbzData(data);
+      final restored = VenBrush.fromIbpzData(data);
 
       expect(restored.name, original.name);
       expect(restored.size, original.size);
