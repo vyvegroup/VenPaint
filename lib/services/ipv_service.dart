@@ -148,7 +148,7 @@ class IpvService {
       final name = utf8.decode(nameBytes);
       final opacity = reader.readFloat32BE();
       final visible = reader.readUint8() != 0;
-      final _blendModeIndex = reader.readUint16BE();
+      reader.readUint16BE(); // blend mode index (reserved for future use)
       final locked = reader.readUint8() != 0;
       final isBackground = reader.readUint8() != 0;
       final layerWidth = reader.readInt32BE();

@@ -125,8 +125,8 @@ class VenBrush {
       throw FormatException('Invalid magic bytes: $magic');
     }
 
-    // Read version (2 bytes)
-    final _version = (data[4] << 8) | data[5];
+    // Read version (2 bytes) - currently unused but reserved for future format versions
+    // final version = (data[4] << 8) | data[5];
 
     int compressedDataOffset;
     Uint8List compressedBytes;
