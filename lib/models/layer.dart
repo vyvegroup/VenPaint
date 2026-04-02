@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 ///
 /// Each layer holds its own pixel data, opacity, visibility, and blend mode.
 class ArtLayer {
-  String id;
+  String id = '';
   String name;
   final ui.Image? _image;
   double opacity;

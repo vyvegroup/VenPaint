@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 ///
 /// Supports IPBZ/VPBZ binary format for QR code exchange with ibisPaint.
 class VenBrush {
-  String id;
+  String id = '';
   String name;
   double size;
   double opacity;
