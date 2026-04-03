@@ -119,15 +119,19 @@ class BrushListAdapter(
         val dp = context.resources.displayMetrics.density
 
         val card = com.google.android.material.card.MaterialCardView(context).apply {
-            cardBackgroundColor = 0xFF0F3460.toInt()
-            cardCornerRadius = (8 * dp)
+            setCardBackgroundColor(0xFF0F3460.toInt())
+            radius = (8 * dp).toFloat()
             cardElevation = 2 * dp
-            radius = (8 * dp)
             useCompatPadding = true
-            layoutMarginStart = (4 * dp).toInt()
-            layoutMarginEnd = (4 * dp).toInt()
-            layoutMarginTop = (4 * dp).toInt()
-            layoutMarginBottom = (4 * dp).toInt()
+            layoutParams = com.google.android.material.card.MaterialCardView.LayoutParams(
+                com.google.android.material.card.MaterialCardView.LayoutParams.MATCH_PARENT,
+                com.google.android.material.card.MaterialCardView.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginStart = (4 * dp).toInt()
+                marginEnd = (4 * dp).toInt()
+                topMargin = (4 * dp).toInt()
+                bottomMargin = (4 * dp).toInt()
+            }
         }
 
         val item = LinearLayout(context).apply {
