@@ -91,6 +91,15 @@ class LayerPanel @JvmOverloads constructor(
         }
         opacityRow.addView(opacityLabel)
 
+        opacityValue = TextView(context).apply {
+            text = "100%"
+            setTextColor(Color.parseColor("#FFFFFF"))
+            textSize = 12f
+            layoutParams = LayoutParams(dpToPx(36), LayoutParams.WRAP_CONTENT).apply {
+                marginStart = dpToPx(4)
+            }
+        }
+
         opacitySlider = SeekBar(context).apply {
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             max = 100
@@ -107,15 +116,6 @@ class LayerPanel @JvmOverloads constructor(
             })
         }
         opacityRow.addView(opacitySlider)
-
-        opacityValue = TextView(context).apply {
-            text = "100%"
-            setTextColor(Color.parseColor("#FFFFFF"))
-            textSize = 12f
-            layoutParams = LayoutParams(dpToPx(36), LayoutParams.WRAP_CONTENT).apply {
-                marginStart = dpToPx(4)
-            }
-        }
         opacityRow.addView(opacityValue)
 
         addView(opacityRow)

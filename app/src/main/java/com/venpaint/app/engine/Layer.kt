@@ -105,8 +105,8 @@ class Layer(
 
         val pixels = IntArray(1)
         // Sample a few points
-        for (x in 0 until bmp.width step max(1, bmp.width / 10)) {
-            for (y in 0 until bmp.height step max(1, bmp.height / 10)) {
+        for (x in 0 until bmp.width step maxOf(1, bmp.width / 10)) {
+            for (y in 0 until bmp.height step maxOf(1, bmp.height / 10)) {
                 bmp.getPixels(pixels, 0, 1, x, y, 1, 1)
                 if (Color.alpha(pixels[0]) > 0) return true
             }

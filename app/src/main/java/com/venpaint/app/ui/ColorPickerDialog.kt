@@ -10,6 +10,7 @@ import android.widget.FrameLayout
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.TextView
 import com.venpaint.app.util.ColorUtils
@@ -221,6 +222,15 @@ class ColorPickerDialog(
         }
         container.addView(labelText)
 
+        val valueText = TextView(context).apply {
+            text = "$initial"
+            setTextColor(Color.parseColor("#FFFFFF"))
+            textSize = 12f
+            layoutParams = LinearLayout.LayoutParams(dpToPx(36), LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                marginStart = dpToPx(4)
+            }
+        }
+
         val slider = SeekBar(context).apply {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             this.max = max
@@ -237,15 +247,6 @@ class ColorPickerDialog(
             })
         }
         container.addView(slider)
-
-        val valueText = TextView(context).apply {
-            text = "$initial"
-            setTextColor(Color.parseColor("#FFFFFF"))
-            textSize = 12f
-            layoutParams = LinearLayout.LayoutParams(dpToPx(36), LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-                marginStart = dpToPx(4)
-            }
-        }
         container.addView(valueText)
 
         return SliderRow(container, slider, valueText)

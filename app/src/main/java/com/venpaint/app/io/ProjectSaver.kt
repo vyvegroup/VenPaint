@@ -141,13 +141,14 @@ class ProjectSaver(private val context: Context) {
             }
 
             if (metadata == null) return false
+            val md = metadata
 
             // Clear existing layers
             layerManager.recycleAll()
-            layerManager.resize(metadata.width, metadata.height)
+            layerManager.resize(md.width, md.height)
 
             // Recreate layers
-            for (layerMeta in metadata.layers) {
+            for (layerMeta in md.layers) {
                 val layer = layerManager.addLayer(layerMeta.name) ?: break
                 layer.opacity = layerMeta.opacity
                 layer.isVisible = layerMeta.isVisible
@@ -161,8 +162,8 @@ class ProjectSaver(private val context: Context) {
             }
 
             // Restore active layer
-            if (metadata.activeLayerIndex in 0 until layerManager.layerCount) {
-                layerManager.setActiveLayer(metadata.activeLayerIndex)
+            if (md.activeLayerIndex in 0 until layerManager.layerCount) {
+                layerManager.setActiveLayer(md.activeLayerIndex)
             }
 
             true

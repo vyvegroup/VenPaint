@@ -202,6 +202,16 @@ class BrushSettingsPanel @JvmOverloads constructor(
         }
         container.addView(labelText)
 
+        val valueText = TextView(context).apply {
+            text = "$initial"
+            setTextColor(Color.parseColor("#FFFFFF"))
+            textSize = 11f
+            layoutParams = LayoutParams(dpToPx(36), LayoutParams.WRAP_CONTENT).apply {
+                marginStart = dpToPx(4)
+            }
+            gravity = Gravity.END
+        }
+
         val slider = SeekBar(context).apply {
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             this.max = max
@@ -220,16 +230,6 @@ class BrushSettingsPanel @JvmOverloads constructor(
             })
         }
         container.addView(slider)
-
-        val valueText = TextView(context).apply {
-            text = "$initial"
-            setTextColor(Color.parseColor("#FFFFFF"))
-            textSize = 11f
-            layoutParams = LayoutParams(dpToPx(36), LayoutParams.WRAP_CONTENT).apply {
-                marginStart = dpToPx(4)
-            }
-            gravity = Gravity.END
-        }
         container.addView(valueText)
 
         return SliderRow(container, slider, valueText)

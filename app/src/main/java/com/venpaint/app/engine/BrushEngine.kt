@@ -358,7 +358,7 @@ class BrushEngine {
                 // Add secondary splatter
                 val splatterCount = (3 * pressure).toInt().coerceAtLeast(1)
                 for (i in 0 until splatterCount) {
-                    val angle = pseudoRandom(point.x.toInt() + i, point.y.toInt()) * Math.PI * 2f
+                    val angle = pseudoRandom(point.x.toInt() + i, point.y.toInt()) * Math.PI.toFloat() * 2f
                     val dist = brush.size * 0.3f * pseudoRandom(i, point.x.toInt())
                     val sx = point.x + cos(angle) * dist
                     val sy = point.y + sin(angle) * dist
