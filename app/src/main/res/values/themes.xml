@@ -21,7 +21,6 @@
 
     <!-- Panel dialog style -->
     <style name="Theme.VenPaint.Panel" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
-        <item name="colorBackground">@color/venpaint_panel_bg</item>
         <item name="android:background">@color/venpaint_surface</item>
         <item name="android:windowBackground">@color/venpaint_surface</item>
         <item name="colorPrimary">@color/venpaint_accent</item>
@@ -31,13 +30,13 @@
     </style>
 
     <!-- Slider style -->
-    <style name="Widget.VenPaint.Slider" parent="Widget.MaterialComponents.slider">
+    <style name="Widget.VenPaint.Slider" parent="Widget.MaterialComponents.Slider">
         <item name="thumbColor">@color/venpaint_slider_thumb</item>
         <item name="tickVisible">false</item>
     </style>
 
     <!-- Toolbar button style -->
-    <style name="Widget.VenPaint.ToolButton" parent="Widget.MaterialComponents.ImageButton">
+    <style name="Widget.VenPaint.ToolButton" parent="Widget.AppCompat.ImageButton">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <item name="android:tint">@color/venpaint_text_primary</item>
         <item name="android:padding">8dp</item>
