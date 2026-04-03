@@ -84,7 +84,7 @@ class ColorPickerDialog(
             setTextColor(Color.parseColor("#B0B0C0"))
             textSize = 12f
             gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 bottomMargin = dpToPx(8)
             }
         }
@@ -123,7 +123,7 @@ class ColorPickerDialog(
             text = "Presets"
             setTextColor(Color.parseColor("#B0B0C0"))
             textSize = 12f
-            layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 topMargin = dpToPx(12)
                 bottomMargin = dpToPx(4)
             }

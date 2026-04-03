@@ -138,7 +138,7 @@ object ColorUtils {
     val defaultPalette: List<Int> = listOf(
         Color.BLACK, Color.DKGRAY, Color.GRAY, Color.LTGRAY, Color.WHITE,
         Color.RED, 0xFFFF6347.toInt(), 0xFFFF8C00.toInt(), Color.YELLOW, 0xFFFFD700.toInt(),
-        Color.GREEN, 0xFF32CD32.toInt(), 0xFF00CED1.toInt(), Color.BLUE, 0FF4169E1.toInt(),
+        Color.GREEN, 0xFF32CD32.toInt(), 0xFF00CED1.toInt(), Color.BLUE, 0xFF4169E1.toInt(),
         0xFF8A2BE2.toInt(), Color.MAGENTA, 0xFFFF69B4.toInt(), 0xFF8B4513.toInt(), 0xFFF5DEB3.toInt()
     )
 }

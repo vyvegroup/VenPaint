@@ -140,8 +140,7 @@ class ProjectSaver(private val context: Context) {
                 }
             }
 
-            if (metadata == null) return false
-            val md = metadata
+            val md = metadata ?: return false
 
             // Clear existing layers
             layerManager.recycleAll()

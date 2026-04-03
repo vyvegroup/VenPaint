@@ -306,7 +306,10 @@ class LayerPanel @JvmOverloads constructor(
             this.text = text
             textSize = 11f
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
-                margin = dpToPx(2)
+                topMargin = dpToPx(2)
+                bottomMargin = dpToPx(2)
+                marginStart = dpToPx(2)
+                marginEnd = dpToPx(2)
             }
             setPadding(dpToPx(4), dpToPx(2), dpToPx(4), dpToPx(2))
             setOnClickListener { onClick() }

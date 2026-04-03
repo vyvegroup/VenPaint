@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.ImageButton
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -106,7 +107,7 @@ class ToolBar @JvmOverloads constructor(
             setBackgroundColor(Color.TRANSPARENT)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(dpToPx(6), dpToPx(6), dpToPx(6), dpToPx(6))
-            contentDescription = contentDescription
+            this.contentDescription = contentDescription
             setOnClickListener {
                 onToolSelected?.invoke(tool)
             }
