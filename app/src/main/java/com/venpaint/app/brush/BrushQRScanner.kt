@@ -110,7 +110,7 @@ class BrushQRScanner(private val context: Context) {
 /**
  * Result of a QR scan operation.
  */
-sealed class ScanResult(
+data class ScanResult(
     val type: ScanType,
     val brush: Brush?,
     val metadata: String?
