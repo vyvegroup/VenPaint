@@ -5,9 +5,15 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     
     steps:
     - name: Checkout code
@@ -38,38 +44,17 @@ jobs:
     - name: Build Release APK
       run: ./gradlew assembleRelease --no-daemon
 
-    - name: Upload Debug APK
+    - name: Set version output
+      id: version
+      run: echo "version=v1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+    - name: Upload APK artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: VenPaint-debug
-        path: app/build/outputs/apk/debug/*.apk
-
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: VenPaint-release
-        path: app/build/outputs/apk/release/*.apk
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download Debug APK
-      uses: actions/download-artifact@v4
-      with:
-        name: VenPaint-debug
-        path: ./apk-output
-
-    - name: Download Release APK
-      uses: actions/download-artifact@v4
-      with:
-        name: VenPaint-release
-        path: ./apk-output
+        name: VenPaint-apk
+        path: |
+          app/build/outputs/apk/debug/*.apk
+          app/build/outputs/apk/release/*.apk
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -89,8 +74,10 @@ jobs:
           - No login required, all features free!
           
           **Installation:**
-          Download the `VenPaint-debug.apk` file and install on your Android device.
-        files: ./apk-output/*
+          Download the `app-debug.apk` file and install on your Android device.
+        files: |
+          app/build/outputs/apk/debug/*.apk
+          app/build/outputs/apk/release/*.apk
         draft: false
         prerelease: false
       env:
