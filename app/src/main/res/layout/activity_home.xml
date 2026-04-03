@@ -7,10 +7,13 @@
     android:layout_height="match_parent"
     android:background="@color/venpaint_background">
 
+    <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/venpaint_primary">
+        android:background="@color/venpaint_toolbar_bg"
+        app:elevation="4dp"
+        android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -18,19 +21,36 @@
             android:layout_height="56dp"
             app:title="VenPaint"
             app:titleTextColor="@color/venpaint_text_primary"
-            app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6">
+            app:titleTextAppearance="@style/TextAppearance.VenPaint.ToolbarTitle"
+            app:titleMarginStart="16dp">
 
+            <!-- Search icon -->
             <ImageButton
-                android:id="@+id/btnImport"
+                android:id="@+id/btnSearch"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_tool_import"
-                android:contentDescription="Import"
-                app:tint="@color/venpaint_text_primary" />
+                android:src="@android:drawable/ic_menu_search"
+                android:contentDescription="Search"
+                app:tint="@color/venpaint_text_secondary"
+                android:visibility="gone" />
 
+            <!-- Settings icon -->
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_preferences"
+                android:contentDescription="Settings"
+                app:tint="@color/venpaint_text_secondary"
+                android:visibility="gone" />
+
+            <!-- Library icon -->
             <ImageButton
                 android:id="@+id/btnLibrary"
                 android:layout_width="40dp"
@@ -40,12 +60,46 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_sort_by_size"
                 android:contentDescription="Library"
-                app:tint="@color/venpaint_text_primary" />
+                app:tint="@color/venpaint_icon_tint" />
+
+            <!-- Import icon -->
+            <ImageButton
+                android:id="@+id/btnImport"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_tool_import"
+                android:contentDescription="Import"
+                app:tint="@color/venpaint_text_secondary" />
 
         </com.google.android.material.appbar.MaterialToolbar>
 
+        <!-- Tab bar - My Gallery -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/homeTabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/venpaint_surface"
+            app:tabTextColor="@color/venpaint_tab_inactive"
+            app:tabSelectedTextColor="@color/venpaint_tab_active"
+            app:tabIndicatorColor="@color/venpaint_tab_active"
+            app:tabIndicatorHeight="2dp"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
+            app:tabRippleColor="@color/venpaint_selected">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Gallery" />
+
+        </com.google.android.material.tabs.TabLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Gallery content -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -56,7 +110,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:scrollbarStyle="outsideOverlay" />
 
         <LinearLayout
             android:id="@+id/emptyView"
@@ -70,7 +125,8 @@
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:src="@android:drawable/ic_menu_gallery"
-                android:alpha="0.3" />
+                android:alpha="0.3"
+                app:tint="@color/venpaint_text_hint" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -92,6 +148,7 @@
 
     </FrameLayout>
 
+    <!-- FAB - Create new artwork -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabNewCanvas"
         android:layout_width="wrap_content"
@@ -103,6 +160,7 @@
         app:tint="@android:color/white"
         app:backgroundTint="@color/venpaint_accent"
         app:fabSize="normal"
-        app:elevation="8dp" />
+        app:elevation="8dp"
+        app:borderWidth="0dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

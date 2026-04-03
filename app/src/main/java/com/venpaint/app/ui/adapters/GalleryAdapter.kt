@@ -18,6 +18,7 @@ class GalleryAdapter(
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val thumbnail: ImageView = view.findViewById(R.id.thumbnail)
+        val thumbnailContainer: ViewGroup = view.findViewById(R.id.thumbnailContainer)
         val nameText: TextView = view.findViewById(R.id.artworkName)
         val sizeText: TextView = view.findViewById(R.id.artworkSize)
     }
@@ -31,7 +32,17 @@ class GalleryAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val artwork = artworks[position]
         holder.nameText.text = artwork.name
-        holder.sizeText.text = "${artwork.width} \u00D7 ${artwork.height}"
+        holder.sizeText.text = "${artwork.width} × ${artwork.height}"
+
+        // Make thumbnail square - set height equal to width dynamically
+        holder.itemView.post {
+            val w = holder.itemView.width
+            if (w > 0) {
+                val params = holder.thumbnailContainer.layoutParams
+                params.height = w
+                holder.thumbnailContainer.layoutParams = params
+            }
+        }
 
         if (artwork.thumbnailPath != null) {
             val bmp = BitmapFactory.decodeFile(artwork.thumbnailPath)

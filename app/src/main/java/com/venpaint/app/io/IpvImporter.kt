@@ -10,19 +10,38 @@ import com.venpaint.app.engine.LayerManager
 import com.venpaint.app.util.FileUtils
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStreamReader
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 /**
  * Imports .ipv files from ibisPaint.
- * .ipv files are ZIP archives containing layer data (PNG/JPEG images) and metadata.
+ *
+ * .ipv files use a custom binary chunk format (NOT ZIP). Each chunk has:
+ * - 4 bytes: chunk type (big-endian int32)
+ * - 4 bytes: data length (big-endian uint32)
+ * - N bytes: data
+ * - 4 bytes: checksum (big-endian int32, must equal -(length+8))
+ *
+ * This importer also supports:
+ * - Legacy .vpp ZIP format (backward compatibility)
+ * - Raw image files as fallback
  */
 class IpvImporter(private val context: Context) {
 
     companion object {
         private const val TAG = "IpvImporter"
+
+        // Chunk type identifiers (matching IpvFormatWriter)
+        private const val CHUNK_ADD_CANVAS   = 0x01000100
+        private const val CHUNK_START_EDIT   = 0x01000200
+        private const val CHUNK_IMAGE        = 0x01000500
+        private const val CHUNK_META_INFO    = 0x01000600
+        private const val CHUNK_ART_INFO_SUB = 0x30000e04
     }
 
     /**
@@ -33,6 +52,7 @@ class IpvImporter(private val context: Context) {
         val layers: List<ImportedLayer> = emptyList(),
         val width: Int = 0,
         val height: Int = 0,
+        val artworkName: String? = null,
         val error: String? = null
     )
 
@@ -62,9 +82,17 @@ class IpvImporter(private val context: Context) {
 
     /**
      * Import an .ipv file from bytes.
+     * Tries multiple formats in order:
+     * 1. Binary .ipv chunk format
+     * 2. Legacy .vpp ZIP format (backward compatibility)
+     * 3. Raw image fallback
      */
     fun importFromBytes(bytes: ByteArray): ImportResult {
-        // Try as ZIP first (standard .ipv format)
+        // Try binary .ipv chunk format first
+        val ipvResult = tryImportAsIpvChunks(bytes)
+        if (ipvResult.success) return ipvResult
+
+        // Try legacy ZIP format (.vpp / old .ipv)
         val zipResult = tryImportAsZip(bytes)
         if (zipResult.success) return zipResult
 
@@ -72,11 +100,299 @@ class IpvImporter(private val context: Context) {
         val imageResult = tryImportAsImage(bytes)
         if (imageResult.success) return imageResult
 
-        return ImportResult(success = false, error = "Unable to parse .ipv file. Not a valid ZIP archive or image.")
+        return ImportResult(
+            success = false,
+            error = "Unable to parse file. Not a valid .ipv binary, ZIP archive, or image."
+        )
+    }
+
+    // ==================== Binary .ipv Chunk Parser ====================
+
+    /**
+     * Try to parse the bytes as a binary .ipv chunk format file.
+     */
+    private fun tryImportAsIpvChunks(bytes: ByteArray): ImportResult {
+        return try {
+            val importedLayers = mutableListOf<ImportedLayer>()
+            var canvasWidth = 0
+            var canvasHeight = 0
+            var artworkName: String? = null
+
+            val stream = ByteArrayInputStream(bytes)
+            var layerIndex = 0
+
+            while (stream.available() > 0) {
+                // Read chunk header: type (4 bytes) + length (4 bytes)
+                val header = ByteArray(8)
+                val headerRead = stream.read(header)
+                if (headerRead < 8) break
+
+                val type = ByteBuffer.wrap(header, 0, 4).order(ByteOrder.BIG_ENDIAN).int
+                val length = ByteBuffer.wrap(header, 4, 4).order(ByteOrder.BIG_ENDIAN).int
+
+                // Validate length
+                if (length < 0 || length > 100_000_000) {
+                    Log.w(TAG, "Invalid chunk length $length for type 0x${type.toString(16)}, skipping")
+                    break
+                }
+
+                // Read chunk data
+                val data = ByteArray(length)
+                val dataRead = stream.read(data)
+                if (dataRead < length) break
+
+                // Read and validate checksum (4 bytes)
+                val checksumBytes = ByteArray(4)
+                val checksumRead = stream.read(checksumBytes)
+                if (checksumRead < 4) break
+
+                val checksum = ByteBuffer.wrap(checksumBytes).order(ByteOrder.BIG_ENDIAN).int
+                // Validate: (length + checksum + 8) should be 0
+                val validation = length + checksum + 8
+                if (validation != 0) {
+                    Log.w(TAG, "Checksum mismatch for chunk 0x${type.toString(16)}: " +
+                            "length=$length, checksum=$checksum, validation=$validation")
+                    // Try to continue parsing anyway - some files may have slight variations
+                }
+
+                // Process chunk by type
+                when (type) {
+                    CHUNK_ADD_CANVAS -> {
+                        val canvasInfo = parseAddCanvas(data)
+                        if (canvasInfo != null) {
+                            canvasWidth = canvasInfo.width
+                            canvasHeight = canvasInfo.height
+                            Log.d(TAG, "AddCanvas: ${canvasWidth}x${canvasHeight}, id=${canvasInfo.identifier}")
+                        }
+                    }
+                    CHUNK_IMAGE -> {
+                        val bitmap = parseImageChunk(data)
+                        if (bitmap != null) {
+                            layerIndex++
+                            importedLayers.add(
+                                ImportedLayer(
+                                    name = "Layer $layerIndex",
+                                    bitmap = bitmap,
+                                    opacity = 1.0f,
+                                    isVisible = true
+                                )
+                            )
+                            Log.d(TAG, "Image chunk: layer $layerIndex, ${bitmap.width}x${bitmap.height}")
+                        }
+                    }
+                    CHUNK_META_INFO -> {
+                        val name = parseMetaInfo(data)
+                        if (name != null && artworkName == null) {
+                            artworkName = name
+                            Log.d(TAG, "MetaInfo: artworkName=$name")
+                        }
+                    }
+                    CHUNK_ART_INFO_SUB -> {
+                        val name = parseArtInfoSub(data)
+                        if (name != null) {
+                            artworkName = name
+                            Log.d(TAG, "ArtInfoSub: artworkName=$name")
+                        }
+                    }
+                    CHUNK_START_EDIT -> {
+                        // Parse for logging purposes
+                        val editInfo = parseStartEdit(data)
+                        Log.d(TAG, "StartEdit: ${editInfo?.appName} ${editInfo?.version}")
+                    }
+                    else -> {
+                        Log.d(TAG, "Skipping unknown chunk type: 0x${type.toString(16)} ($length bytes)")
+                    }
+                }
+            }
+
+            if (importedLayers.isEmpty()) {
+                return ImportResult(success = false, error = "No image layers found in .ipv binary format")
+            }
+
+            // Use detected dimensions or fall back to layer bitmap dimensions
+            if (canvasWidth == 0 || canvasHeight == 0) {
+                canvasWidth = importedLayers.maxOf { it.bitmap.width }
+                canvasHeight = importedLayers.maxOf { it.bitmap.height }
+            }
+
+            ImportResult(
+                success = true,
+                layers = importedLayers,
+                width = canvasWidth,
+                height = canvasHeight,
+                artworkName = artworkName
+            )
+        } catch (e: Exception) {
+            Log.d(TAG, "Not a valid .ipv binary file: ${e.message}")
+            ImportResult(success = false, error = "Not a valid .ipv binary format: ${e.message}")
+        }
     }
 
     /**
-     * Try to parse the bytes as a ZIP archive.
+     * Parse AddCanvas chunk (0x01000100) data.
+     * Returns canvas info or null on failure.
+     */
+    private fun parseAddCanvas(data: ByteArray): CanvasInfo? {
+        return try {
+            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
+
+            // 8 bytes: timestamp as BE double
+            val timestamp = buf.double
+
+            // 4 bytes: width as BE u32
+            val width = buf.int
+
+            // 4 bytes: height as BE u32
+            val height = buf.int
+
+            // String: identifier (BE u16 length + UTF-8)
+            val identifier = readString(buf)
+
+            // 1 byte: artwork type
+            val artworkType = buf.get().toInt() and 0xFF
+
+            CanvasInfo(timestamp, width, height, identifier, artworkType)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to parse AddCanvas chunk", e)
+            null
+        }
+    }
+
+    private data class CanvasInfo(
+        val timestamp: Double,
+        val width: Int,
+        val height: Int,
+        val identifier: String,
+        val artworkType: Int
+    )
+
+    /**
+     * Parse Image chunk (0x01000500) data and extract the embedded PNG bitmap.
+     * Data format:
+     * - 8 bytes: timestamp as BE double
+     * - 4 bytes: some int
+     * - 6 bytes: padding
+     * - 4 bytes: png data length as BE u32
+     * - N bytes: PNG data
+     */
+    private fun parseImageChunk(data: ByteArray): Bitmap? {
+        return try {
+            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
+
+            // 8 bytes: timestamp as BE double
+            buf.double
+
+            // 4 bytes: some int
+            buf.int
+
+            // 6 bytes: padding
+            buf.position(buf.position() + 6)
+
+            // 4 bytes: png data length as BE u32
+            val pngLength = buf.int
+
+            if (pngLength <= 0 || pngLength > data.size - buf.position()) {
+                Log.w(TAG, "Invalid PNG length in Image chunk: $pngLength")
+                return null
+            }
+
+            // Read PNG data
+            val pngData = ByteArray(pngLength)
+            buf.get(pngData)
+
+            // Decode PNG
+            BitmapFactory.decodeByteArray(pngData, 0, pngData.size)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to parse Image chunk", e)
+            null
+        }
+    }
+
+    /**
+     * Parse MetaInfo chunk (0x01000600) data to extract artwork name.
+     * Data format:
+     * - 8 bytes: timestamp as BE double
+     * - String: artwork name (or metadata)
+     */
+    private fun parseMetaInfo(data: ByteArray): String? {
+        return try {
+            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
+
+            // 8 bytes: timestamp as BE double
+            buf.double
+
+            // String: artwork name
+            readString(buf)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to parse MetaInfo chunk", e)
+            null
+        }
+    }
+
+    /**
+     * Parse ArtInfoSub chunk (0x30000e04) data to extract artwork title.
+     * Data format:
+     * - String: artwork title
+     */
+    private fun parseArtInfoSub(data: ByteArray): String? {
+        return try {
+            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
+            readString(buf)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to parse ArtInfoSub chunk", e)
+            null
+        }
+    }
+
+    /**
+     * Parse StartEdit chunk (0x01000200) for logging.
+     */
+    private fun parseStartEdit(data: ByteArray): StartEditInfo? {
+        return try {
+            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
+
+            // 4 bytes: unknown
+            buf.int
+
+            // 8 bytes: timestamp as BE double
+            val timestamp = buf.double
+
+            // Strings: app name, version, device
+            val appName = readString(buf)
+            val version = readString(buf)
+            val device = readString(buf)
+
+            StartEditInfo(timestamp, appName, version, device)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to parse StartEdit chunk", e)
+            null
+        }
+    }
+
+    private data class StartEditInfo(
+        val timestamp: Double,
+        val appName: String,
+        val version: String,
+        val device: String
+    )
+
+    /**
+     * Read a .ipv format string from a ByteBuffer: BE u16 length + UTF-8 bytes.
+     */
+    private fun readString(buf: ByteBuffer): String {
+        val length = buf.short.toInt() and 0xFFFF
+        if (length <= 0 || length > buf.remaining()) {
+            return ""
+        }
+        val bytes = ByteArray(length)
+        buf.get(bytes)
+        return String(bytes, Charsets.UTF_8)
+    }
+
+    // ==================== Legacy ZIP Format Parser ====================
+
+    /**
+     * Try to parse the bytes as a ZIP archive (legacy .vpp format).
      */
     private fun tryImportAsZip(bytes: ByteArray): ImportResult {
         return try {
@@ -87,11 +403,9 @@ class IpvImporter(private val context: Context) {
 
             ZipInputStream(bytes.inputStream()).use { zipIn ->
                 var entry: ZipEntry?
-                val entries = mutableListOf<String>()
 
                 while (zipIn.nextEntry.also { entry = it } != null) {
                     val name = entry!!.name
-                    entries.add(name)
 
                     when {
                         // Look for JSON metadata
@@ -111,8 +425,7 @@ class IpvImporter(private val context: Context) {
                         // Look for XML metadata
                         name.endsWith(".xml", ignoreCase = true) -> {
                             // ibisPaint sometimes uses XML for metadata
-                            val content = readZipEntryText(zipIn)
-                            // Could parse XML here if needed
+                            readZipEntryText(zipIn) // Consume
                         }
                         // Look for image files (layers)
                         name.endsWith(".png", ignoreCase = true) ||
@@ -172,6 +485,8 @@ class IpvImporter(private val context: Context) {
         }
     }
 
+    // ==================== Raw Image Fallback ====================
+
     /**
      * Try to parse the bytes as a raw image.
      */
@@ -199,6 +514,8 @@ class IpvImporter(private val context: Context) {
             ImportResult(success = false, error = "Could not decode as image")
         }
     }
+
+    // ==================== Layer Manager Integration ====================
 
     /**
      * Apply imported layers to a LayerManager.
@@ -233,6 +550,8 @@ class IpvImporter(private val context: Context) {
             }
         }
     }
+
+    // ==================== Utility Methods ====================
 
     /**
      * Read text content from a zip entry.

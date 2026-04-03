@@ -62,7 +62,7 @@ class HomeActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         recyclerView = findViewById(R.id.galleryRecyclerView)
-        recyclerView.layoutManager = GridLayoutManager(this, 3)
+        recyclerView.layoutManager = GridLayoutManager(this, 2)
         adapter = GalleryAdapter(
             artworks,
             onArtworkClick = { artwork -> openArtwork(artwork) },
@@ -111,12 +111,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showArtworkOptions(artwork: Artwork) {
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.Theme_VenPaint_Panel)
             .setTitle(artwork.name)
-            .setItems(arrayOf("Open", "Rename", "Delete")) { _, which ->
+            .setItems(arrayOf("Open", "Share", "Delete")) { _, which ->
                 when (which) {
                     0 -> openArtwork(artwork)
-                    1 -> showRenameDialog(artwork)
+                    1 -> openArtwork(artwork) // Share placeholder
                     2 -> confirmDelete(artwork)
                 }
             }
@@ -130,7 +130,7 @@ class HomeActivity : AppCompatActivity() {
         input.setTextColor(getColor(R.color.venpaint_text_primary))
         input.setHintTextColor(getColor(R.color.venpaint_text_hint))
 
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Rename Artwork")
             .setView(input)
             .setPositiveButton("Rename") { _, _ ->
@@ -154,7 +154,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun confirmDelete(artwork: Artwork) {
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Delete Artwork")
             .setMessage("Are you sure you want to delete \"${artwork.name}\"?")
             .setPositiveButton("Delete") { _, _ ->
@@ -191,7 +191,7 @@ class HomeActivity : AppCompatActivity() {
                 text = "${labels[index]}\n$preset"
                 textSize = 11f
                 setPadding(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4))
-                setBackgroundColor(getColor(R.color.venpaint_surface_light))
+                setBackgroundColor(getColor(R.color.venpaint_card))
                 setTextColor(getColor(R.color.venpaint_text_primary))
             }
             btn.setOnClickListener {
@@ -202,7 +202,7 @@ class HomeActivity : AppCompatActivity() {
             presetsGrid.addView(btn)
         }
 
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("New Canvas")
             .setView(dialogView)
             .setPositiveButton("Create") { _, _ ->
@@ -225,7 +225,7 @@ class HomeActivity : AppCompatActivity() {
             type = "*/*"
             putExtra(
                 Intent.EXTRA_MIME_TYPES,
-                arrayOf("image/*", "application/octet-stream", "application/zip")
+                arrayOf("image/*", "application/octet-stream", "application/zip", "application/x-ibispaint")
             )
         }
         importLauncher.launch(intent)

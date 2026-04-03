@@ -3,6 +3,7 @@ package com.venpaint.app.ui
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
@@ -17,6 +18,7 @@ import com.venpaint.app.util.ColorUtils
 
 /**
  * Color picker dialog with HSV sliders and a preset palette.
+ * Styled to match ibisPaint dark theme.
  */
 class ColorPickerDialog(
     private val context: Context,
@@ -36,6 +38,13 @@ class ColorPickerDialog(
     private lateinit var saturationValue: TextView
     private lateinit var valueValue: TextView
     private lateinit var hexInput: TextView
+
+    // ibisPaint dark theme colors
+    private val surfaceColor = "#16213E"
+    private val accentColor = "#E94560"
+    private val textColor = "#FFFFFF"
+    private val secondaryTextColor = "#A0A0B0"
+    private val borderColor = "#2A2A3D"
 
     init {
         val hsv = ColorUtils.colorToHsv(initialColor)
@@ -81,7 +90,7 @@ class ColorPickerDialog(
         // Hex display
         hexInput = TextView(context).apply {
             text = ColorUtils.colorToHex(currentColor)
-            setTextColor(Color.parseColor("#B0B0C0"))
+            setTextColor(Color.parseColor(secondaryTextColor))
             textSize = 12f
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
@@ -121,7 +130,7 @@ class ColorPickerDialog(
         // Preset palette
         val paletteLabel = TextView(context).apply {
             text = "Presets"
-            setTextColor(Color.parseColor("#B0B0C0"))
+            setTextColor(Color.parseColor(secondaryTextColor))
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 topMargin = dpToPx(12)
@@ -176,7 +185,7 @@ class ColorPickerDialog(
                 background = GradientDrawable().apply {
                     setColor(color)
                     cornerRadius = dpToPx(4).toFloat()
-                    setStroke(dpToPx(1), Color.parseColor("#404060"))
+                    setStroke(dpToPx(1), Color.parseColor(borderColor))
                 }
                 setOnClickListener {
                     val hsv = ColorUtils.colorToHsv(color)
@@ -216,7 +225,7 @@ class ColorPickerDialog(
 
         val labelText = TextView(context).apply {
             text = label
-            setTextColor(Color.parseColor("#B0B0C0"))
+            setTextColor(Color.parseColor(secondaryTextColor))
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(dpToPx(32), LinearLayout.LayoutParams.WRAP_CONTENT)
         }
@@ -224,7 +233,7 @@ class ColorPickerDialog(
 
         val valueText = TextView(context).apply {
             text = "$initial"
-            setTextColor(Color.parseColor("#FFFFFF"))
+            setTextColor(Color.parseColor(textColor))
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(dpToPx(36), LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = dpToPx(4)
@@ -235,6 +244,8 @@ class ColorPickerDialog(
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             this.max = max
             progress = initial
+            progressDrawable?.setColorFilter(Color.parseColor(accentColor), PorterDuff.Mode.SRC_IN)
+            thumb?.setColorFilter(Color.parseColor(accentColor), PorterDuff.Mode.SRC_IN)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {

@@ -161,8 +161,8 @@ class DrawingCanvas @JvmOverloads constructor(
         checkerboardBitmap = Bitmap.createBitmap(totalSize, totalSize, Bitmap.Config.ARGB_8888)
 
         val canvas = Canvas(checkerboardBitmap!!)
-        val light = Color.parseColor("#FF3A3A50")
-        val dark = Color.parseColor("#FF2A2A3D")
+        val light = Color.parseColor("#FF1E2A4A")
+        val dark = Color.parseColor("#FF16213E")
 
         for (i in 0 until checkerCount) {
             for (j in 0 until checkerCount) {
@@ -344,7 +344,7 @@ class DrawingCanvas @JvmOverloads constructor(
         val bottomRight = canvasToScreen(canvasWidth.toFloat(), canvasHeight.toFloat())
 
         val paint = android.graphics.Paint().apply {
-            color = Color.parseColor("#404060")
+            color = Color.parseColor("#2A2A3D")
             style = android.graphics.Paint.Style.STROKE
             strokeWidth = 1f
         }

@@ -34,6 +34,7 @@ import com.venpaint.app.brush.ScanType
 import com.venpaint.app.engine.DrawingHistory
 import com.venpaint.app.engine.LayerManager
 import com.venpaint.app.io.ArtworkStorage
+import com.venpaint.app.io.IpvFormatWriter
 import com.venpaint.app.io.IpvImporter
 import com.venpaint.app.io.ProjectExporter
 import com.venpaint.app.io.ProjectSaver
@@ -189,15 +190,21 @@ class DrawingActivity : AppCompatActivity() {
                     hasUnsavedChanges = true
                 }
             } else {
-                // Try .ipv import
+                // Try .ipv import (binary chunk format) or other formats
                 val result = ipvImporter.importFromUri(uri)
                 if (result.success) {
                     withContext(Dispatchers.Main) {
                         drawingHistory.clear()
+                        // Update canvas dimensions from imported data
+                        if (result.width > 0 && result.height > 0) {
+                            canvasWidth = result.width
+                            canvasHeight = result.height
+                        }
                         ipvImporter.applyToLayerManager(result, layerManager)
                         drawingCanvas.initialize(canvasWidth, canvasHeight)
                         drawingCanvas.refresh()
                         layerPanel?.refreshLayers()
+                        hasUnsavedChanges = true
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -455,7 +462,7 @@ class DrawingActivity : AppCompatActivity() {
     // ==================== Clear & Fill ====================
 
     private fun clearActiveLayer() {
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Clear Layer")
             .setMessage("Clear the active layer? This can be undone.")
             .setPositiveButton("Clear") { _, _ ->
@@ -491,7 +498,7 @@ class DrawingActivity : AppCompatActivity() {
             setPadding(dpToPx(24), dpToPx(8), dpToPx(24), dpToPx(8))
         }
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Save Project")
             .setView(input)
             .setPositiveButton("Save") { _, _ ->
@@ -555,17 +562,21 @@ class DrawingActivity : AppCompatActivity() {
     // ==================== Export ====================
 
     private fun showExportMenu() {
-        val formats = arrayOf("PNG (Lossless)", "JPG (Lossy)")
-        val formatEnums = listOf(
-            ProjectExporter.ExportFormat.PNG,
-            ProjectExporter.ExportFormat.JPG
+        val formats = arrayOf(
+            "PNG (Lossless)",
+            "JPG (Lossy)",
+            ".ipv (ibisPaint)"
         )
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Export Image")
             .setItems(formats) { _, which ->
                 requestStoragePermission {
-                    exportAs(formatEnums[which])
+                    when (which) {
+                        0 -> exportAs(ProjectExporter.ExportFormat.PNG)
+                        1 -> exportAs(ProjectExporter.ExportFormat.JPG)
+                        2 -> exportAsIpv()
+                    }
                 }
             }
             .show()
@@ -581,12 +592,50 @@ class DrawingActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Export the current project as .ipv (ibisPaint binary format).
+     */
+    private fun exportAsIpv() {
+        val externalDir = getExternalFilesDir(null)
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                if (externalDir == null) {
+                    return@withContext IpvFormatWriter.WriteResult(
+                        success = false, error = "Cannot access external storage"
+                    )
+                }
+                val filename = "${artworkName.sanitizeFilename()}.ipv"
+                val exportDir = java.io.File(externalDir, "VenPaint/Exports")
+                if (!exportDir.exists()) exportDir.mkdirs()
+                val file = java.io.File(exportDir, filename)
+
+                val writer = IpvFormatWriter()
+                writer.writeIpvFile(layerManager, file, artworkName)
+            }
+
+            if (result != null && result.success) {
+                val location = result.file?.absolutePath ?: "Unknown"
+                Toast.makeText(
+                    this@DrawingActivity,
+                    "Exported as .ipv (ibisPaint)\n$location",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this@DrawingActivity,
+                    result?.error ?: ".ipv export failed",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     // ==================== Import ====================
 
     private fun showImportDialog() {
         val options = arrayOf("Import .ipv (ibisPaint)", "Import Image")
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Import")
             .setItems(options) { _, which ->
                 when (which) {
@@ -634,9 +683,16 @@ class DrawingActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             if (result.success) {
                                 drawingHistory.clear()
+                                // Update canvas dimensions from imported data
+                                if (result.width > 0 && result.height > 0) {
+                                    canvasWidth = result.width
+                                    canvasHeight = result.height
+                                }
                                 ipvImporter.applyToLayerManager(result, layerManager)
+                                drawingCanvas.initialize(canvasWidth, canvasHeight)
                                 drawingCanvas.refresh()
                                 layerPanel?.refreshLayers()
+                                hasUnsavedChanges = true
                                 Toast.makeText(
                                     this@DrawingActivity,
                                     "Imported ${result.layers.size} layers from .ipv",
@@ -664,7 +720,7 @@ class DrawingActivity : AppCompatActivity() {
     private fun showBrushQRMenu() {
         val options = arrayOf("Generate Brush QR Code", "Scan Brush QR Code")
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Brush QR")
             .setItems(options) { _, which ->
                 when (which) {
@@ -688,7 +744,7 @@ class DrawingActivity : AppCompatActivity() {
             setPadding(dpToPx(24), dpToPx(16), dpToPx(24), dpToPx(16))
         }
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
             .setTitle("Brush QR Code")
             .setView(imageView)
             .setPositiveButton("Save") { _, _ ->
@@ -740,7 +796,7 @@ class DrawingActivity : AppCompatActivity() {
                 }
             }
             ScanType.IBISPAINT_BRUSH -> {
-                AlertDialog.Builder(this)
+                AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
                     .setTitle("ibisPaint Brush")
                     .setMessage("This is an ibisPaint brush QR code.\nOpen in browser to view details?")
                     .setPositiveButton("Open") { _, _ ->
@@ -797,7 +853,7 @@ class DrawingActivity : AppCompatActivity() {
         }
 
         if (hasUnsavedChanges) {
-            AlertDialog.Builder(this)
+            AlertDialog.Builder(this, R.style.Theme_VenPaint_Panel)
                 .setTitle("Save before exiting?")
                 .setMessage("You have unsaved changes. Save now?")
                 .setPositiveButton("Save & Exit") { _, _ -> saveAndExit() }
@@ -822,4 +878,11 @@ class DrawingActivity : AppCompatActivity() {
     private fun dpToPx(dp: Int): Int {
         return (dp * resources.displayMetrics.density).toInt()
     }
+}
+
+/**
+ * Sanitize a string for use as a filename.
+ */
+private fun String.sanitizeFilename(): String {
+    return this.replace(Regex("[^a-zA-Z0-9_-]"), "_").take(50)
 }

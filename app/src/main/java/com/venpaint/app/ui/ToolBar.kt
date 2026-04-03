@@ -16,7 +16,7 @@ import androidx.core.content.ContextCompat
 import com.venpaint.app.R
 
 /**
- * Bottom toolbar with tool buttons for the drawing interface.
+ * Vertical tool palette for the drawing interface (ibisPaint-style left sidebar).
  */
 class ToolBar @JvmOverloads constructor(
     context: Context,
@@ -37,26 +37,26 @@ class ToolBar @JvmOverloads constructor(
     private val toolButtons = mutableMapOf<Tool, ImageButton>()
 
     init {
-        orientation = HORIZONTAL
-        gravity = Gravity.CENTER
-        setBackgroundColor(Color.parseColor("#CC1B1B2F"))
-        setPadding(4, 4, 4, 4)
+        orientation = VERTICAL
+        gravity = Gravity.CENTER_HORIZONTAL
+        setBackgroundColor(Color.parseColor("#0A0A1A"))
+        setPadding(2, 4, 2, 4)
 
-        val buttonSize = dpToPx(44)
+        val buttonSize = dpToPx(40)
 
-        // Left tools
-        addToolButton(Tool.PEN, R.drawable.ic_tool_pen, "Pen", buttonSize)
+        // Drawing tools
         addToolButton(Tool.PENCIL, R.drawable.ic_tool_pencil, "Pencil", buttonSize)
-        addToolButton(Tool.ERASER, R.drawable.ic_tool_eraser, "Eraser", buttonSize)
+        addToolButton(Tool.PEN, R.drawable.ic_tool_pen, "Pen", buttonSize)
         addToolButton(Tool.AIRBRUSH, R.drawable.ic_tool_airbrush, "Airbrush", buttonSize)
         addToolButton(Tool.WATERCOLOR, R.drawable.ic_tool_watercolor, "Watercolor", buttonSize)
+        addToolButton(Tool.ERASER, R.drawable.ic_tool_eraser, "Eraser", buttonSize)
 
         // Separator
         addSeparator()
 
+        addToolButton(Tool.FILL, R.drawable.ic_tool_fill, "Fill", buttonSize)
         addToolButton(Tool.COLOR_PICKER, R.drawable.ic_tool_color, "Color", buttonSize)
         addToolButton(Tool.LAYERS, R.drawable.ic_tool_layers, "Layers", buttonSize)
-        addToolButton(Tool.FILL, R.drawable.ic_tool_fill, "Fill", buttonSize)
 
         // Separator
         addSeparator()
@@ -67,6 +67,7 @@ class ToolBar @JvmOverloads constructor(
         // Separator
         addSeparator()
 
+        addToolButton(Tool.CLEAR, android.R.drawable.ic_menu_delete, "Clear", buttonSize)
         addToolButton(Tool.SAVE, R.drawable.ic_tool_save, "Save", buttonSize)
         addToolButton(Tool.EXPORT, R.drawable.ic_tool_export, "Export", buttonSize)
         addToolButton(Tool.IMPORT, R.drawable.ic_tool_import, "Import", buttonSize)
@@ -80,10 +81,10 @@ class ToolBar @JvmOverloads constructor(
         toolButtons.forEach { (t, button) ->
             if (t == tool) {
                 button.setColorFilter(Color.parseColor("#E94560"), PorterDuff.Mode.SRC_IN)
-                button.background = getRippleBg()
+                button.setBackgroundColor(Color.parseColor("#33E94560"))
             } else {
-                button.setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_IN)
-                button.background = getSelectableBg()
+                button.setColorFilter(Color.parseColor("#A0A0B0"), PorterDuff.Mode.SRC_IN)
+                button.setBackgroundColor(Color.TRANSPARENT)
             }
         }
     }
@@ -99,11 +100,11 @@ class ToolBar @JvmOverloads constructor(
     private fun addToolButton(tool: Tool, iconRes: Int, contentDescription: String, size: Int) {
         val button = ImageButton(context).apply {
             layoutParams = LayoutParams(size, size).apply {
-                marginStart = 1
-                marginEnd = 1
+                topMargin = 1
+                bottomMargin = 1
             }
             setImageResource(iconRes)
-            setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_IN)
+            setColorFilter(Color.parseColor("#A0A0B0"), PorterDuff.Mode.SRC_IN)
             setBackgroundColor(Color.TRANSPARENT)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(dpToPx(6), dpToPx(6), dpToPx(6), dpToPx(6))
@@ -119,12 +120,12 @@ class ToolBar @JvmOverloads constructor(
 
     private fun addSeparator() {
         val separator = View(context).apply {
-            layoutParams = LayoutParams(dpToPx(1), dpToPx(28)).apply {
-                marginStart = dpToPx(4)
-                marginEnd = dpToPx(4)
-                gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LayoutParams(dpToPx(28), dpToPx(1)).apply {
+                topMargin = dpToPx(2)
+                bottomMargin = dpToPx(2)
+                gravity = Gravity.CENTER_HORIZONTAL
             }
-            setBackgroundColor(Color.parseColor("#404060"))
+            setBackgroundColor(Color.parseColor("#2A2A3D"))
         }
         addView(separator)
     }

@@ -1,13 +1,27 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme -->
-    <style name="Theme.VenPaint" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/venpaint_primary</item>
-        <item name="colorPrimaryDark">@color/venpaint_primary_dark</item>
+    <!-- Base application theme - ibisPaint Dark -->
+    <style name="Theme.VenPaint" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/venpaint_accent</item>
+        <item name="colorPrimaryDark">@color/venpaint_primary</item>
         <item name="colorAccent">@color/venpaint_accent</item>
         <item name="android:windowBackground">@color/venpaint_background</item>
-        <item name="android:statusBarColor">@color/venpaint_transparent</item>
-        <item name="android:navigationBarColor">@color/venpaint_transparent</item>
+        <item name="android:statusBarColor">@color/venpaint_primary</item>
+        <item name="android:navigationBarColor">@color/venpaint_primary</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:colorBackground">@color/venpaint_background</item>
+        <item name="android:textColorPrimary">@color/venpaint_text_primary</item>
+        <item name="android:textColorSecondary">@color/venpaint_text_secondary</item>
+        <item name="android:textColorHint">@color/venpaint_text_hint</item>
+        <item name="colorControlNormal">@color/venpaint_text_secondary</item>
+        <item name="colorControlActivated">@color/venpaint_accent</item>
+        <item name="colorControlHighlight">@color/venpaint_accent</item>
+        <item name="android:editTextColor">@color/venpaint_text_primary</item>
+        <item name="android:textColor">@color/venpaint_text_primary</item>
+        <item name="backgroundTint">@color/venpaint_surface</item>
+        <item name="cardBackgroundColor">@color/venpaint_card</item>
+        <item name="android:windowTitleStyle">@style/TextAppearance.VenPaint.ToolbarTitle</item>
+        <item name="alertDialogTheme">@style/Theme.VenPaint.Panel</item>
+        <item name="tabStyle">@style/Widget.VenPaint.TabLayout</item>
     </style>
 
     <!-- Fullscreen theme for main activity -->
@@ -20,13 +34,39 @@
     </style>
 
     <!-- Panel dialog style -->
-    <style name="Theme.VenPaint.Panel" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+    <style name="Theme.VenPaint.Panel" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="android:background">@color/venpaint_surface</item>
         <item name="android:windowBackground">@color/venpaint_surface</item>
         <item name="colorPrimary">@color/venpaint_accent</item>
         <item name="colorAccent">@color/venpaint_accent</item>
         <item name="android:textColorPrimary">@color/venpaint_text_primary</item>
         <item name="android:textColorSecondary">@color/venpaint_text_secondary</item>
+        <item name="android:textColorHint">@color/venpaint_text_hint</item>
+        <item name="colorControlNormal">@color/venpaint_text_secondary</item>
+        <item name="colorControlActivated">@color/venpaint_accent</item>
+        <item name="buttonBarButtonStyle">@style/Widget.VenPaint.DialogButton</item>
+    </style>
+
+    <!-- Dialog button style -->
+    <style name="Widget.VenPaint.DialogButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/venpaint_accent</item>
+    </style>
+
+    <!-- Toolbar title style -->
+    <style name="TextAppearance.VenPaint.ToolbarTitle" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textColor">@color/venpaint_text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- TabLayout style -->
+    <style name="Widget.VenPaint.TabLayout" parent="Widget.MaterialComponents.TabLayout">
+        <item name="tabTextColor">@color/venpaint_tab_inactive</item>
+        <item name="tabSelectedTextColor">@color/venpaint_tab_active</item>
+        <item name="tabIndicatorColor">@color/venpaint_tab_active</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="tabBackground">@color/venpaint_surface</item>
+        <item name="tabMode">fixed</item>
     </style>
 
     <!-- Slider style -->
@@ -38,7 +78,7 @@
     <!-- Toolbar button style -->
     <style name="Widget.VenPaint.ToolButton" parent="Widget.AppCompat.ImageButton">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
-        <item name="android:tint">@color/venpaint_text_primary</item>
+        <item name="android:tint">@color/venpaint_icon_tint</item>
         <item name="android:padding">8dp</item>
     </style>
 
@@ -52,5 +92,13 @@
     <style name="TextAppearance.VenPaint.Value" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textColor">@color/venpaint_text_primary</item>
         <item name="android:textSize">13sp</item>
+    </style>
+
+    <!-- Gallery card style -->
+    <style name="Widget.VenPaint.GalleryCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">@color/venpaint_card</item>
+        <item name="contentPadding">0dp</item>
     </style>
 </resources>

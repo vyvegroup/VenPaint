@@ -2,6 +2,8 @@ package com.venpaint.app.ui
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.ImageView
@@ -13,7 +15,8 @@ import com.venpaint.app.brush.BrushType
 import com.venpaint.app.util.ColorUtils
 
 /**
- * Bottom panel for brush settings with sliders for size, opacity, hardness, and spacing.
+ * Right-side brush settings panel with vertical sliders for size, opacity, hardness, and spacing.
+ * ibisPaint-style panel on the right side of the canvas.
  */
 class BrushSettingsPanel @JvmOverloads constructor(
     context: Context,
@@ -37,16 +40,34 @@ class BrushSettingsPanel @JvmOverloads constructor(
     private val hardnessValue: TextView
     private val colorPreview: ImageView
 
+    // Color constants matching ibisPaint dark theme
+    private val bgColor = "#0A0A1A"
+    private val labelColor = "#A0A0B0"
+    private val valueColor = "#FFFFFF"
+    private val accentColor = "#E94560"
+    private val borderColor = "#2A2A3D"
+
     init {
-        orientation = HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        setBackgroundColor(Color.parseColor("#CC1B1B2F"))
-        setPadding(12, 8, 12, 8)
+        orientation = VERTICAL
+        gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+        setBackgroundColor(Color.parseColor(bgColor))
+        setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
+
+        // Title
+        val title = TextView(context).apply {
+            text = "Brush"
+            setTextColor(Color.parseColor(valueColor))
+            textSize = 13f
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, dpToPx(8))
+        }
+        addView(title)
 
         // --- Color Preview ---
         colorPreview = ImageView(context).apply {
-            layoutParams = LayoutParams(dpToPx(36), dpToPx(36)).apply {
-                marginEnd = dpToPx(8)
+            layoutParams = LayoutParams(dpToPx(48), dpToPx(48)).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+                bottomMargin = dpToPx(8)
             }
             scaleType = ImageView.ScaleType.CENTER_CROP
             setImageDrawable(createColorCircleDrawable(Color.BLACK))
@@ -56,7 +77,7 @@ class BrushSettingsPanel @JvmOverloads constructor(
         // --- Sliders Column ---
         val slidersLayout = LinearLayout(context).apply {
             orientation = VERTICAL
-            layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         }
 
         // Size slider
@@ -92,10 +113,20 @@ class BrushSettingsPanel @JvmOverloads constructor(
         addView(slidersLayout)
 
         // --- Brush Type Buttons ---
+        val brushTypesLabel = TextView(context).apply {
+            text = "Type"
+            setTextColor(Color.parseColor(labelColor))
+            textSize = 11f
+            gravity = Gravity.CENTER
+            setPadding(0, dpToPx(12), 0, dpToPx(4))
+        }
+        addView(brushTypesLabel)
+
         val brushTypesLayout = LinearLayout(context).apply {
             orientation = VERTICAL
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                marginStart = dpToPx(12)
+            gravity = Gravity.CENTER_HORIZONTAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dpToPx(2)
             }
         }
 
@@ -178,7 +209,7 @@ class BrushSettingsPanel @JvmOverloads constructor(
     }
 
     /**
-     * Create a row with label, slider, and value text.
+     * Create a row with label, slider, and value text (vertical orientation).
      */
     private fun createSliderRow(
         context: Context,
@@ -189,36 +220,45 @@ class BrushSettingsPanel @JvmOverloads constructor(
         onProgress: (Int, TextView) -> Unit
     ): SliderRow {
         val container = LinearLayout(context).apply {
+            orientation = VERTICAL
+            gravity = Gravity.START
+            setPadding(0, dpToPx(4), 0, dpToPx(2))
+        }
+
+        // Label + Value row
+        val labelRow = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, 2, 0, 2)
+            setPadding(0, 0, 0, dpToPx(2))
         }
 
         val labelText = TextView(context).apply {
             text = label
-            setTextColor(Color.parseColor("#B0B0C0"))
+            setTextColor(Color.parseColor(labelColor))
             textSize = 11f
-            layoutParams = LayoutParams(dpToPx(44), LayoutParams.WRAP_CONTENT)
+            layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
         }
-        container.addView(labelText)
+        labelRow.addView(labelText)
 
         val valueText = TextView(context).apply {
             text = "$initial"
-            setTextColor(Color.parseColor("#FFFFFF"))
+            setTextColor(Color.parseColor(valueColor))
             textSize = 11f
-            layoutParams = LayoutParams(dpToPx(36), LayoutParams.WRAP_CONTENT).apply {
-                marginStart = dpToPx(4)
-            }
             gravity = Gravity.END
         }
+        labelRow.addView(valueText)
+        container.addView(labelRow)
 
         val slider = SeekBar(context).apply {
-            layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
             this.max = max
             progress = initial
             setPadding(0, 0, 0, 0)
 
-            // Style the slider
+            // Style slider progress color
+            progressDrawable?.setColorFilter(Color.parseColor(accentColor), PorterDuff.Mode.SRC_IN)
+            thumb?.setColorFilter(Color.parseColor(accentColor), PorterDuff.Mode.SRC_IN)
+
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
@@ -230,25 +270,29 @@ class BrushSettingsPanel @JvmOverloads constructor(
             })
         }
         container.addView(slider)
-        container.addView(valueText)
 
         return SliderRow(container, slider, valueText)
     }
 
     /**
-     * Create a small text button.
+     * Create a small text button for brush type selection.
      */
     private fun createTextButton(context: Context, text: String, onClick: () -> Unit): TextView {
         return TextView(context).apply {
             this.text = text
-            setTextColor(Color.parseColor("#FFFFFF"))
-            textSize = 11f
-            setPadding(dpToPx(10), dpToPx(4), dpToPx(10), dpToPx(4))
+            setTextColor(Color.parseColor(valueColor))
+            textSize = 12f
+            gravity = Gravity.CENTER
+            setPadding(dpToPx(16), dpToPx(6), dpToPx(16), dpToPx(6))
             setOnClickListener { onClick() }
-            setBackgroundResource(android.R.drawable.btn_default)
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = 2
-                bottomMargin = 2
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#16213E"))
+                cornerRadius = dpToPx(6).toFloat()
+                setStroke(1, Color.parseColor(borderColor))
+            }
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dpToPx(2)
+                bottomMargin = dpToPx(2)
             }
         }
     }
@@ -256,12 +300,12 @@ class BrushSettingsPanel @JvmOverloads constructor(
     /**
      * Create a color circle drawable.
      */
-    private fun createColorCircleDrawable(color: Int): android.graphics.drawable.GradientDrawable {
-        return android.graphics.drawable.GradientDrawable().apply {
-            shape = android.graphics.drawable.GradientDrawable.OVAL
+    private fun createColorCircleDrawable(color: Int): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
             setColor(color)
-            setSize(dpToPx(36), dpToPx(36))
-            setStroke(dpToPx(1), Color.parseColor("#404060"))
+            setSize(dpToPx(48), dpToPx(48))
+            setStroke(dpToPx(2), Color.parseColor(accentColor))
         }
     }
 

@@ -30,7 +30,8 @@ class ProjectSaver(private val context: Context) {
     companion object {
         private const val TAG = "ProjectSaver"
         private const val PROJECT_DIR = "VenPaint/Projects"
-        private const val PROJECT_EXTENSION = ".vpp"
+        const val PROJECT_EXTENSION = ".ipv"
+        private const val LEGACY_EXTENSION = ".vpp"
         private const val METADATA_FILE = "project.json"
     }
 
@@ -58,9 +59,19 @@ class ProjectSaver(private val context: Context) {
     )
 
     /**
-     * Save the current project.
+     * Save the current project in .ipv format (default).
      */
     fun saveProject(
+        layerManager: LayerManager,
+        projectName: String = "Untitled"
+    ): File? {
+        return saveAsIpv(layerManager, projectName)
+    }
+
+    /**
+     * Save the current project as .ipv (ibisPaint binary chunk format).
+     */
+    fun saveAsIpv(
         layerManager: LayerManager,
         projectName: String = "Untitled"
     ): File? {
@@ -69,6 +80,36 @@ class ProjectSaver(private val context: Context) {
             if (!dir.exists()) dir.mkdirs()
 
             val filename = projectName.sanitize() + PROJECT_EXTENSION
+            val file = File(dir, filename)
+
+            val writer = IpvFormatWriter()
+            val result = writer.writeIpvFile(layerManager, file, projectName)
+
+            if (result.success) {
+                Log.d(TAG, "Project saved as .ipv: ${file.absolutePath}")
+                file
+            } else {
+                Log.e(TAG, "Failed to save as .ipv: ${result.error}")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save project as .ipv", e)
+            null
+        }
+    }
+
+    /**
+     * Save the current project as .vpp (legacy ZIP format).
+     */
+    fun saveAsVpp(
+        layerManager: LayerManager,
+        projectName: String = "Untitled"
+    ): File? {
+        return try {
+            val dir = File(context.getExternalFilesDir(null), PROJECT_DIR)
+            if (!dir.exists()) dir.mkdirs()
+
+            val filename = projectName.sanitize() + LEGACY_EXTENSION
             val file = File(dir, filename)
 
             ZipOutputStream(FileOutputStream(file)).use { zipOut ->
@@ -90,16 +131,17 @@ class ProjectSaver(private val context: Context) {
                 }
             }
 
-            Log.d(TAG, "Project saved: ${file.absolutePath}")
+            Log.d(TAG, "Project saved as .vpp: ${file.absolutePath}")
             file
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to save project", e)
+            Log.e(TAG, "Failed to save project as .vpp", e)
             null
         }
     }
 
     /**
      * Load a project from a file.
+     * Supports both .ipv (binary chunk format) and .vpp (legacy ZIP format).
      */
     fun loadProject(file: File, layerManager: LayerManager): Boolean {
         return try {
@@ -113,8 +155,19 @@ class ProjectSaver(private val context: Context) {
 
     /**
      * Load a project from bytes.
+     * Automatically detects format: .ipv binary chunks vs .vpp ZIP.
      */
     fun loadProjectFromBytes(bytes: ByteArray, layerManager: LayerManager): Boolean {
+        // Try loading as .ipv binary chunk format first
+        val ipvImporter = IpvImporter(context)
+        val ipvResult = ipvImporter.importFromBytes(bytes)
+        if (ipvResult.success) {
+            ipvImporter.applyToLayerManager(ipvResult, layerManager)
+            Log.d(TAG, "Loaded project as .ipv binary format (${ipvResult.layers.size} layers)")
+            return true
+        }
+
+        // Fall back to legacy .vpp ZIP format
         return try {
             var metadata: ProjectMetadata? = null
             val layerBitmaps = mutableMapOf<Int, Bitmap>()
@@ -165,6 +218,7 @@ class ProjectSaver(private val context: Context) {
                 layerManager.setActiveLayer(md.activeLayerIndex)
             }
 
+            Log.d(TAG, "Loaded project as .vpp ZIP format (${md.layers.size} layers)")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load project from bytes", e)
@@ -213,13 +267,17 @@ class ProjectSaver(private val context: Context) {
     }
 
     /**
-     * Get a list of saved projects.
+     * Get a list of saved projects (both .ipv and .vpp formats).
      */
     fun getSavedProjects(): List<File> {
         val dir = File(context.getExternalFilesDir(null), PROJECT_DIR)
         if (!dir.exists() || !dir.isDirectory) return emptyList()
 
-        return dir.listFiles { f -> f.extension == PROJECT_EXTENSION.removePrefix(".") }
+        return dir.listFiles { f ->
+            val ext = f.extension.lowercase()
+            ext == PROJECT_EXTENSION.removePrefix(".") ||
+            ext == LEGACY_EXTENSION.removePrefix(".")
+        }
             ?.sortedByDescending { it.lastModified() }
             ?: emptyList()
     }

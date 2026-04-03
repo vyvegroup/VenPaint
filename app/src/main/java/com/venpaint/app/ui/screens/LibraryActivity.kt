@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -90,7 +91,8 @@ class BrushLibraryFragment : Fragment() {
     ): View {
         val root = inflater.inflate(R.layout.fragment_library_list, container, false) as FrameLayout
         recyclerView = RecyclerView(requireContext())
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        // Use 2-column grid for brush cards like ibisPaint
+        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
         recyclerView.setPadding(8, 8, 8, 8)
 
         brushManager = BrushManager(requireContext())
@@ -110,59 +112,75 @@ class BrushListAdapter(
     private val onBrushClick: (Brush) -> Unit
 ) : RecyclerView.Adapter<BrushListAdapter.ViewHolder>() {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val nameText: TextView
-        val typeText: TextView
-        val sizeText: TextView
-
-        init {
-            nameText = view.findViewById(android.R.id.text1)
-            typeText = view.findViewById(android.R.id.text2)
-            sizeText = TextView(view.context).apply {
-                setPadding(8, 0, 8, 0)
-                textSize = 12f
-            }
-        }
-    }
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
         val dp = context.resources.displayMetrics.density
 
+        val card = com.google.android.material.card.MaterialCardView(context).apply {
+            cardBackgroundColor = 0xFF0F3460.toInt()
+            cardCornerRadius = (8 * dp)
+            cardElevation = 2 * dp
+            radius = (8 * dp)
+            useCompatPadding = true
+            layoutMarginStart = (4 * dp).toInt()
+            layoutMarginEnd = (4 * dp).toInt()
+            layoutMarginTop = (4 * dp).toInt()
+            layoutMarginBottom = (4 * dp).toInt()
+        }
+
         val item = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding((16 * dp).toInt(), (12 * dp).toInt(), (16 * dp).toInt(), (12 * dp).toInt())
-            minimumHeight = (64 * dp).toInt()
-            setBackgroundColor(0xFF2A2A3D.toInt())
-            id = android.R.id.text1
+            setPadding((12 * dp).toInt(), (12 * dp).toInt(), (12 * dp).toInt(), (12 * dp).toInt())
         }
+
+        // Brush preview swatch
+        val swatch = View(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (48 * dp).toInt()
+            ).apply {
+                bottomMargin = (8 * dp).toInt()
+            }
+            setBackgroundColor(0xFF16213E.toInt())
+            tag = "swatch"
+        }
+        item.addView(swatch)
 
         val nameTv = TextView(context).apply {
-            id = android.R.id.text1
-            textSize = 16f
+            textSize = 14f
             setTextColor(0xFFFFFFFF.toInt())
-        }
-        val typeTv = TextView(context).apply {
-            id = android.R.id.text2
-            textSize = 12f
-            setTextColor(0xFF808090.toInt())
+            setSingleLine(true)
+            tag = "name"
         }
         item.addView(nameTv)
-        item.addView(typeTv)
-        item.tag = typeTv
 
-        return ViewHolder(item)
+        val typeTv = TextView(context).apply {
+            textSize = 11f
+            setTextColor(0xFFA0A0B0.toInt())
+            tag = "type"
+        }
+        item.addView(typeTv)
+
+        card.addView(item)
+        return ViewHolder(card)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val brush = brushes[position]
-        val parent = holder.itemView as LinearLayout
+        val card = holder.itemView as com.google.android.material.card.MaterialCardView
+        val layout = card.getChildAt(0) as LinearLayout
 
-        val nameTv = parent.getChildAt(0) as TextView
-        val typeTv = parent.getChildAt(1) as TextView
+        val swatch = layout.getChildAt(0) as View
+        val nameTv = layout.getChildAt(1) as TextView
+        val typeTv = layout.getChildAt(2) as TextView
 
         nameTv.text = brush.name
-        typeTv.text = "${brush.type.displayName} | Size: ${brush.size.toInt()} | Opacity: ${(brush.opacity * 100).toInt()}%"
+        typeTv.text = "${brush.type.displayName} · ${brush.size.toInt()}px"
+
+        // Set swatch color based on brush color
+        swatch.setBackgroundColor(brush.color)
 
         holder.itemView.setOnClickListener { onBrushClick(brush) }
     }
@@ -197,7 +215,7 @@ private fun BrushLibraryFragment.showBrushDetailDialog(brush: Brush) {
         val labelTv = TextView(context).apply {
             text = "$label: "
             textSize = 14f
-            setTextColor(0xFFB0B0C0.toInt())
+            setTextColor(0xFFA0A0B0.toInt())
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.4f)
         }
         val valueTv = TextView(context).apply {
@@ -269,7 +287,7 @@ class FxListAdapter(
             orientation = LinearLayout.VERTICAL
             setPadding((16 * dp).toInt(), (12 * dp).toInt(), (16 * dp).toInt(), (12 * dp).toInt())
             minimumHeight = (64 * dp).toInt()
-            setBackgroundColor(0xFF2A2A3D.toInt())
+            setBackgroundColor(0xFF0F3460.toInt())
         }
 
         val nameTv = TextView(context).apply {
@@ -279,7 +297,7 @@ class FxListAdapter(
         }
         val descTv = TextView(context).apply {
             textSize = 12f
-            setTextColor(0xFF808090.toInt())
+            setTextColor(0xFFA0A0B0.toInt())
             tag = "desc"
         }
         item.addView(nameTv)
@@ -316,7 +334,7 @@ private fun FxLibraryFragment.showFxDetailDialog(effect: FxEffect) {
     val categoryTv = TextView(context).apply {
         text = "Category: ${effect.category.name}"
         textSize = 14f
-        setTextColor(0xFFB0B0C0.toInt())
+        setTextColor(0xFFA0A0B0.toInt())
     }
     layout.addView(categoryTv)
 
@@ -334,7 +352,7 @@ private fun FxLibraryFragment.showFxDetailDialog(effect: FxEffect) {
         val paramsTitle = TextView(context).apply {
             text = "Parameters:"
             textSize = 14f
-            setTextColor(0xFFB0B0C0.toInt())
+            setTextColor(0xFFA0A0B0.toInt())
             setPadding(0, (12 * dp).toInt(), 0, (4 * dp).toInt())
         }
         layout.addView(paramsTitle)
@@ -422,8 +440,10 @@ class MyPresetsFragment : Fragment() {
         val context = context ?: return
         val input = EditText(context)
         input.hint = "Folder name"
+        input.setTextColor(0xFFFFFFFF.toInt())
+        input.setHintTextColor(0xFF606070.toInt())
 
-        MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(context, R.style.Theme_VenPaint_Panel)
             .setTitle("Create Folder")
             .setView(input)
             .setPositiveButton("Create") { _, _ ->
@@ -440,7 +460,7 @@ class MyPresetsFragment : Fragment() {
 
     private fun showFolderOptions(folder: Folder) {
         val context = context ?: return
-        MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(context, R.style.Theme_VenPaint_Panel)
             .setTitle(folder.name)
             .setItems(arrayOf("Rename", "Delete")) { _, which ->
                 when (which) {
@@ -460,8 +480,10 @@ class MyPresetsFragment : Fragment() {
         val context = context ?: return
         val input = EditText(context)
         input.setText(folder.name)
+        input.setTextColor(0xFFFFFFFF.toInt())
+        input.setHintTextColor(0xFF606070.toInt())
 
-        MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(context, R.style.Theme_VenPaint_Panel)
             .setTitle("Rename Folder")
             .setView(input)
             .setPositiveButton("Rename") { _, _ ->
@@ -491,13 +513,13 @@ class FolderListAdapter(
             orientation = LinearLayout.HORIZONTAL
             setPadding((16 * dp).toInt(), (12 * dp).toInt(), (16 * dp).toInt(), (12 * dp).toInt())
             minimumHeight = (56 * dp).toInt()
-            setBackgroundColor(0xFF2A2A3D.toInt())
+            setBackgroundColor(0xFF0F3460.toInt())
             gravity = android.view.Gravity.CENTER_VERTICAL
         }
 
         val icon = ImageView(context).apply {
             setImageResource(android.R.drawable.ic_menu_sort_by_size)
-            setColorFilter(0xFFB0B0C0.toInt(), android.graphics.PorterDuff.Mode.SRC_IN)
+            setColorFilter(0xFFE94560.toInt(), android.graphics.PorterDuff.Mode.SRC_IN)
             layoutParams = LinearLayout.LayoutParams((36 * dp).toInt(), (36 * dp).toInt()).apply {
                 marginEnd = (12 * dp).toInt()
             }
@@ -515,7 +537,7 @@ class FolderListAdapter(
         }
         val typeTv = TextView(context).apply {
             textSize = 12f
-            setTextColor(0xFF808090.toInt())
+            setTextColor(0xFFA0A0B0.toInt())
             tag = "type"
         }
         textLayout.addView(nameTv)

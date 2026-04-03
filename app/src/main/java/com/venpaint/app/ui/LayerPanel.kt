@@ -3,6 +3,7 @@ package com.venpaint.app.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageView
@@ -15,6 +16,7 @@ import com.venpaint.app.engine.LayerManager
 
 /**
  * Panel showing the layer stack with controls for visibility, opacity, blend modes, etc.
+ * Styled to match ibisPaint dark theme.
  */
 class LayerPanel @JvmOverloads constructor(
     context: Context,
@@ -38,6 +40,15 @@ class LayerPanel @JvmOverloads constructor(
     // Selected layer index
     private var selectedIndex: Int = 0
 
+    // Color constants - ibisPaint dark theme
+    private val panelBg = "#0A0A1A"
+    private val surfaceColor = "#16213E"
+    private val cardColor = "#0F3460"
+    private val accentColor = "#E94560"
+    private val textColor = "#FFFFFF"
+    private val secondaryTextColor = "#A0A0B0"
+    private val borderColor = "#2A2A3D"
+
     // UI elements
     private val layerList: LinearLayout
     private val addBtn: Button
@@ -50,13 +61,13 @@ class LayerPanel @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
-        setBackgroundColor(Color.parseColor("#E61B1B2F"))
+        setBackgroundColor(Color.parseColor(panelBg))
         setPadding(dpToPx(12), dpToPx(8), dpToPx(12), dpToPx(8))
 
         // Title
         val title = TextView(context).apply {
             text = "Layers"
-            setTextColor(Color.parseColor("#FFFFFF"))
+            setTextColor(Color.parseColor(textColor))
             textSize = 16f
             setPadding(0, 0, 0, dpToPx(8))
         }
@@ -83,7 +94,7 @@ class LayerPanel @JvmOverloads constructor(
 
         val opacityLabel = TextView(context).apply {
             text = "Opacity:"
-            setTextColor(Color.parseColor("#B0B0C0"))
+            setTextColor(Color.parseColor(secondaryTextColor))
             textSize = 12f
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
                 marginEnd = dpToPx(8)
@@ -93,7 +104,7 @@ class LayerPanel @JvmOverloads constructor(
 
         opacityValue = TextView(context).apply {
             text = "100%"
-            setTextColor(Color.parseColor("#FFFFFF"))
+            setTextColor(Color.parseColor(textColor))
             textSize = 12f
             layoutParams = LayoutParams(dpToPx(36), LayoutParams.WRAP_CONTENT).apply {
                 marginStart = dpToPx(4)
@@ -104,6 +115,8 @@ class LayerPanel @JvmOverloads constructor(
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             max = 100
             progress = 100
+            progressDrawable?.setColorFilter(Color.parseColor(accentColor), android.graphics.PorterDuff.Mode.SRC_IN)
+            thumb?.setColorFilter(Color.parseColor(accentColor), android.graphics.PorterDuff.Mode.SRC_IN)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
@@ -127,6 +140,12 @@ class LayerPanel @JvmOverloads constructor(
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
                 topMargin = dpToPx(4)
                 bottomMargin = dpToPx(4)
+            }
+            setTextColor(Color.parseColor(textColor))
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor(surfaceColor))
+                cornerRadius = dpToPx(4).toFloat()
+                setStroke(1, Color.parseColor(borderColor))
             }
             setOnClickListener { cycleBlendMode() }
         }
@@ -230,13 +249,13 @@ class LayerPanel @JvmOverloads constructor(
             minimumHeight = dpToPx(48)
 
             if (isSelected) {
-                setBackgroundColor(Color.parseColor("#55E94560"))
+                setBackgroundColor(Color.parseColor("#33E94560"))
             } else {
                 setBackgroundColor(Color.TRANSPARENT)
             }
 
             // Reset background on touch
-            val bg = if (isSelected) Color.parseColor("#55E94560") else Color.TRANSPARENT
+            val bg = if (isSelected) Color.parseColor("#33E94560") else Color.TRANSPARENT
             setBackgroundResource(android.R.drawable.list_selector_background)
         }
 
@@ -263,7 +282,11 @@ class LayerPanel @JvmOverloads constructor(
             } else {
                 setImageDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
             }
-            setBackgroundResource(android.R.drawable.spinner_background)
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor(surfaceColor))
+                cornerRadius = dpToPx(4).toFloat()
+                setStroke(1, Color.parseColor(borderColor))
+            }
             setPadding(1, 1, 1, 1)
         }
         row.addView(thumbnail)
@@ -271,7 +294,7 @@ class LayerPanel @JvmOverloads constructor(
         // Layer name
         val nameText = TextView(context).apply {
             text = layer.name
-            setTextColor(Color.parseColor("#FFFFFF"))
+            setTextColor(Color.parseColor(textColor))
             textSize = 13f
             layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
             setSingleLine(true)
@@ -281,7 +304,7 @@ class LayerPanel @JvmOverloads constructor(
         // Layer number
         val indexText = TextView(context).apply {
             text = "#${layerManager?.getLayers()?.indexOf(layer)?.plus(1) ?: "?"}"
-            setTextColor(Color.parseColor("#808090"))
+            setTextColor(Color.parseColor(secondaryTextColor))
             textSize = 11f
             layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
         }
@@ -312,6 +335,12 @@ class LayerPanel @JvmOverloads constructor(
                 marginEnd = dpToPx(2)
             }
             setPadding(dpToPx(4), dpToPx(2), dpToPx(4), dpToPx(2))
+            setTextColor(Color.parseColor(textColor))
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor(surfaceColor))
+                cornerRadius = dpToPx(4).toFloat()
+                setStroke(1, Color.parseColor(borderColor))
+            }
             setOnClickListener { onClick() }
         }
     }

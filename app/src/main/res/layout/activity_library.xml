@@ -8,29 +8,39 @@
     android:orientation="vertical"
     android:background="@color/venpaint_background">
 
+    <!-- Toolbar with back arrow -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/venpaint_primary"
+        android:background="@color/venpaint_toolbar_bg"
+        android:elevation="4dp"
         app:title="Library"
         app:titleTextColor="@color/venpaint_text_primary"
-        app:navigationIcon="@android:drawable/ic_menu_revert" />
+        app:titleTextAppearance="@style/TextAppearance.VenPaint.ToolbarTitle"
+        app:navigationIcon="@android:drawable/ic_menu_revert"
+        app:navigationIconTint="@color/venpaint_accent" />
 
+    <!-- Tabs: Brushes, FX, My Presets -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:background="@color/venpaint_surface"
-        app:tabTextColor="@color/venpaint_text_secondary"
-        app:tabSelectedTextColor="@color/venpaint_accent"
-        app:tabIndicatorColor="@color/venpaint_accent"
-        app:tabMode="fixed" />
+        app:tabTextColor="@color/venpaint_tab_inactive"
+        app:tabSelectedTextColor="@color/venpaint_tab_active"
+        app:tabIndicatorColor="@color/venpaint_tab_active"
+        app:tabIndicatorHeight="2dp"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabRippleColor="@color/venpaint_selected" />
 
+    <!-- ViewPager for tab content -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:background="@color/venpaint_background" />
 
 </LinearLayout>
