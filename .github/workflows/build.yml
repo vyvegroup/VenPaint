@@ -41,8 +41,66 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug --no-daemon
 
-    - name: Build Release APK
+    - name: Build Release APK (unsigned)
       run: ./gradlew assembleRelease --no-daemon
+
+    - name: Generate signing keystore
+      env:
+        KEYSTORE_PASSWORD: venpaint2026
+      run: |
+        keytool -genkeypair -v \
+          -keystore /tmp/venpaint-release.keystore \
+          -alias venpaint \
+          -keyalg RSA \
+          -keysize 4096 \
+          -validity 10000 \
+          -storepass "$KEYSTORE_PASSWORD" \
+          -keypass "$KEYSTORE_PASSWORD" \
+          -dname "CN=VenPaint, OU=Development, O=VenPaint, L=Unknown, ST=Unknown, C=US"
+
+    - name: Find Android build tools
+      id: bt
+      run: |
+        # Find the available build-tools version
+        BT_VERSION=$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)
+        echo "version=$BT_VERSION" >> $GITHUB_OUTPUT
+        echo "Using build-tools version: $BT_VERSION"
+
+    - name: Sign APK with v1 + v2 + v3
+      env:
+        KEYSTORE_PASSWORD: venpaint2026
+      run: |
+        BT_DIR="$ANDROID_HOME/build-tools/${{ steps.bt.outputs.version }}"
+        
+        # Find the unsigned release APK
+        UNSIGNED_APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -1)
+        echo "Found unsigned APK: $UNSIGNED_APK"
+        
+        # Zipalign
+        mkdir -p /tmp/signed
+        "$BT_DIR/zipalign" -f -v -p 4 \
+          "$UNSIGNED_APK" \
+          /tmp/signed/app-release-aligned.apk 2>&1 | tail -5
+        
+        # Sign with v1 + v2 + v3 signature schemes
+        "$BT_DIR/apksigner" sign \
+          --ks /tmp/venpaint-release.keystore \
+          --ks-key-alias venpaint \
+          --ks-pass "pass:$KEYSTORE_PASSWORD" \
+          --key-pass "pass:$KEYSTORE_PASSWORD" \
+          --v1-signing-enabled true \
+          --v2-signing-enabled true \
+          --v3-signing-enabled true \
+          --v4-signing-enabled false \
+          --out /tmp/signed/VenPaint-signed.apk \
+          /tmp/signed/app-release-aligned.apk
+        
+        # Verify signatures
+        echo "=== Signature Verification ==="
+        "$BT_DIR/apksigner" verify -v --print-certs /tmp/signed/VenPaint-signed.apk
+        
+        # Copy signed APK to output directory
+        cp /tmp/signed/VenPaint-signed.apk app/build/outputs/apk/release/
 
     - name: Set version output
       id: version
@@ -54,7 +112,7 @@ jobs:
         name: VenPaint-apk
         path: |
           app/build/outputs/apk/debug/*.apk
-          app/build/outputs/apk/release/*.apk
+          app/build/outputs/apk/release/VenPaint-signed.apk
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -73,11 +131,13 @@ jobs:
           - Undo/Redo
           - No login required, all features free!
           
+          **Signed APK** with APK Signature Scheme v1 + v2 + v3
+          
           **Installation:**
-          Download the `app-debug.apk` file and install on your Android device.
+          Download `VenPaint-signed.apk` and install on your Android device.
         files: |
-          app/build/outputs/apk/debug/*.apk
-          app/build/outputs/apk/release/*.apk
+          app/build/outputs/apk/debug/app-debug.apk
+          app/build/outputs/apk/release/VenPaint-signed.apk
         draft: false
         prerelease: false
       env:
