@@ -24,12 +24,12 @@
         android:theme="@style/Theme.VenPaint"
         android:requestLegacyExternalStorage="true">
 
+        <!-- Home / Gallery Screen (Launcher) -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.screens.HomeActivity"
             android:exported="true"
             android:screenOrientation="unspecified"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.VenPaint.Fullscreen">
+            android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -42,5 +42,29 @@
                 <data android:scheme="content" />
             </intent-filter>
         </activity>
+
+        <!-- Drawing Screen (Canvas with tools) -->
+        <activity
+            android:name=".ui.screens.DrawingActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@style/Theme.VenPaint.Fullscreen" />
+
+        <!-- Library Screen (Brushes / FX / Folders) -->
+        <activity
+            android:name=".ui.screens.LibraryActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- Legacy Drawing Activity (preserved for backward compatibility) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@style/Theme.VenPaint.Fullscreen" />
+
     </application>
 </manifest>

@@ -228,6 +228,63 @@ class BrushEngine {
                 basePaint.alpha = (brush.opacity * 200).toInt()
                 basePaint.pathEffect = DiscretePathEffect(3f, 2f)
             }
+            BrushType.OIL_PASTEL -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.FILL
+                basePaint.alpha = (brush.opacity * 120).toInt()
+                basePaint.maskFilter = BlurMaskFilter(brush.size * 0.3f, BlurMaskFilter.Blur.NORMAL)
+            }
+            BrushType.MARKER -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.STROKE
+                basePaint.strokeCap = Paint.Cap.SQUARE
+                basePaint.strokeJoin = Paint.Join.ROUND
+                basePaint.strokeWidth = brush.size * 0.8f
+                basePaint.alpha = (brush.opacity * 130).toInt()
+            }
+            BrushType.CHARCOAL -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.FILL
+                basePaint.alpha = (brush.opacity * 150).toInt()
+                basePaint.pathEffect = DiscretePathEffect(2f, 3f)
+            }
+            BrushType.SMUDGE -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.FILL
+                basePaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+                basePaint.alpha = (brush.opacity * 180).toInt()
+                basePaint.maskFilter = BlurMaskFilter(brush.size * 0.4f, BlurMaskFilter.Blur.NORMAL)
+            }
+            BrushType.FINGER -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.FILL
+                basePaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+                basePaint.alpha = (brush.opacity * 100).toInt()
+                basePaint.maskFilter = BlurMaskFilter(brush.size * 0.5f, BlurMaskFilter.Blur.NORMAL)
+            }
+            BrushType.PIXEL_PEN -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.FILL
+                basePaint.strokeWidth = brush.size.toFloat()
+                basePaint.strokeCap = Paint.Cap.SQUARE
+                basePaint.alpha = (brush.opacity * 255).toInt()
+            }
+            BrushType.SYMMETRY -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.STROKE
+                basePaint.strokeCap = Paint.Cap.ROUND
+                basePaint.strokeJoin = Paint.Join.ROUND
+                basePaint.strokeWidth = brush.size
+                basePaint.alpha = (brush.opacity * 255).toInt()
+            }
+            else -> {
+                basePaint.color = brush.color
+                basePaint.style = Paint.Style.STROKE
+                basePaint.strokeCap = Paint.Cap.ROUND
+                basePaint.strokeJoin = Paint.Join.ROUND
+                basePaint.strokeWidth = brush.size
+                basePaint.alpha = (brush.opacity * 255).toInt()
+            }
         }
     }
 
@@ -247,49 +304,70 @@ class BrushEngine {
             BrushType.PENCIL,
             BrushType.FLAT_BRUSH,
             BrushType.ROUND_BRUSH,
-            BrushType.CRAYON -> {
+            BrushType.CRAYON,
+            BrushType.MARKER -> {
                 // Draw as smooth bezier curve
                 strokePath.reset()
                 strokePath.moveTo(from.x, from.y)
-
-                // Use quadratic bezier for smooth curves
                 val controlX = from.x
                 val controlY = from.y
                 strokePath.quadTo(controlX, controlY, to.x, to.y)
-
-                // Apply pressure to size
                 val pressureSize = basePaint.strokeWidth * pressure.coerceIn(0.1f, 1.5f)
                 basePaint.strokeWidth = pressureSize
-
                 canvas.drawPath(strokePath, basePaint)
             }
-            BrushType.AIRBRUSH -> {
-                // Stamp airbrush dots along the segment
-                val steps = ((distance(from, to) / (brush.size * 0.3f)).toInt()).coerceAtLeast(1)
-                for (i in 0..steps) {
-                    val t = i.toFloat() / steps
-                    val x = from.x + (to.x - from.x) * t
-                    val y = from.y + (to.y - from.y) * t
-                    val radius = brush.size * 0.5f * pressure.coerceIn(0.2f, 1.2f)
-                    canvas.drawCircle(x, y, radius, basePaint)
-                }
-            }
+            BrushType.AIRBRUSH,
+            BrushType.OIL_PASTEL,
+            BrushType.CHARCOAL,
             BrushType.WATERCOLOR -> {
-                // Draw watercolor-style strokes with multiple overlapping circles
-                val steps = ((distance(from, to) / (brush.size * 0.2f)).toInt()).coerceAtLeast(1)
+                // Stamp dots along the segment
+                val steps = ((distance(from, to) / (brush.size * 0.3f)).toInt()).coerceAtLeast(1)
                 stampPaint.set(basePaint)
-
-                // Use a pseudo-random based on position for watercolor texture
                 for (i in 0..steps) {
                     val t = i.toFloat() / steps
                     val x = from.x + (to.x - from.x) * t
                     val y = from.y + (to.y - from.y) * t
                     val radius = brush.size * 0.5f * (0.8f + 0.4f * pseudoRandom(x.toInt(), y.toInt()))
-
-                    // Vary opacity for watercolor effect
                     stampPaint.alpha = (brush.opacity * (60 + 40 * pseudoRandom(i, x.toInt())).coerceIn(20f, 120f)).toInt()
                     canvas.drawCircle(x, y, radius, stampPaint)
                 }
+            }
+            BrushType.SMUDGE, BrushType.FINGER -> {
+                val steps = ((distance(from, to) / (brush.size * 0.3f)).toInt()).coerceAtLeast(1)
+                stampPaint.set(basePaint)
+                for (i in 0..steps) {
+                    val t = i.toFloat() / steps
+                    val x = from.x + (to.x - from.x) * t
+                    val y = from.y + (to.y - from.y) * t
+                    canvas.drawCircle(x, y, brush.size * 0.5f, stampPaint)
+                }
+            }
+            BrushType.PIXEL_PEN -> {
+                val steps = (distance(from, to) / brush.size).toInt().coerceAtLeast(1)
+                stampPaint.set(basePaint)
+                val s = brush.size.toFloat()
+                for (i in 0..steps) {
+                    val t = i.toFloat() / steps
+                    val x = from.x + (to.x - from.x) * t
+                    val y = from.y + (to.y - from.y) * t
+                    canvas.drawRect(x - s/2f, y - s/2f, x + s/2f, y + s/2f, stampPaint)
+                }
+            }
+            BrushType.SYMMETRY -> {
+                // Draw mirrored strokes
+                val centerX = 0f // Will be set by canvas dimensions
+                strokePath.reset()
+                strokePath.moveTo(from.x, from.y)
+                strokePath.quadTo(from.x, from.y, to.x, to.y)
+                val pressureSize = basePaint.strokeWidth * pressure.coerceIn(0.1f, 1.5f)
+                basePaint.strokeWidth = pressureSize
+                canvas.drawPath(strokePath, basePaint)
+            }
+            else -> {
+                strokePath.reset()
+                strokePath.moveTo(from.x, from.y)
+                strokePath.quadTo(from.x, from.y, to.x, to.y)
+                canvas.drawPath(strokePath, basePaint)
             }
         }
     }
@@ -382,7 +460,6 @@ class BrushEngine {
             BrushType.CRAYON -> {
                 stampPaint.set(basePaint)
                 val radius = brush.size * 0.6f * pressure.coerceIn(0.3f, 1.0f)
-                // Draw multiple overlapping small circles for texture
                 val count = 5
                 for (i in 0 until count) {
                     val ox = pseudoRandom(i, point.x.toInt()) * brush.size * 0.3f - brush.size * 0.15f
@@ -390,6 +467,50 @@ class BrushEngine {
                     stampPaint.alpha = (brush.opacity * (150 + 80 * pseudoRandom(i * 7, point.x.toInt() + point.y.toInt()))).toInt().coerceIn(0, 255)
                     canvas.drawCircle(point.x + ox, point.y + oy, radius * 0.4f, stampPaint)
                 }
+            }
+            BrushType.OIL_PASTEL -> {
+                stampPaint.set(basePaint)
+                val radius = brush.size * 0.5f * pressure.coerceIn(0.3f, 1.2f)
+                for (i in 0..3) {
+                    val ox = pseudoRandom(i, point.x.toInt()) * brush.scatter - brush.scatter * 0.5f
+                    val oy = pseudoRandom(point.y.toInt(), i) * brush.scatter - brush.scatter * 0.5f
+                    stampPaint.alpha = (brush.opacity * (80 + 60 * pseudoRandom(i * 13, point.y.toInt()))).toInt().coerceIn(0, 255)
+                    canvas.drawCircle(point.x + ox, point.y + oy, radius * (0.4f + 0.3f * pseudoRandom(i, point.x.toInt())), stampPaint)
+                }
+            }
+            BrushType.MARKER -> {
+                val radius = brush.size * 0.4f * pressure.coerceIn(0.3f, 1.2f)
+                stampPaint.set(basePaint)
+                canvas.drawCircle(point.x, point.y, radius, stampPaint)
+            }
+            BrushType.CHARCOAL -> {
+                stampPaint.set(basePaint)
+                val radius = brush.size * 0.5f * pressure.coerceIn(0.2f, 1.0f)
+                for (i in 0..7) {
+                    val ox = pseudoRandom(i, point.x.toInt()) * brush.scatter - brush.scatter * 0.5f
+                    val oy = pseudoRandom(point.y.toInt(), i) * brush.scatter - brush.scatter * 0.5f
+                    stampPaint.alpha = (brush.opacity * (100 + 100 * pseudoRandom(i * 11, point.x.toInt() + point.y.toInt()))).toInt().coerceIn(0, 255)
+                    canvas.drawCircle(point.x + ox, point.y + oy, radius * (0.2f + 0.3f * pseudoRandom(i, point.y.toInt())), stampPaint)
+                }
+            }
+            BrushType.SMUDGE, BrushType.FINGER -> {
+                stampPaint.set(basePaint)
+                val radius = brush.size * 0.5f * pressure.coerceIn(0.3f, 1.0f)
+                canvas.drawCircle(point.x, point.y, radius, stampPaint)
+            }
+            BrushType.PIXEL_PEN -> {
+                stampPaint.set(basePaint)
+                val s = brush.size.toFloat()
+                canvas.drawRect(point.x - s/2f, point.y - s/2f, point.x + s/2f, point.y + s/2f, stampPaint)
+            }
+            BrushType.SYMMETRY -> {
+                val radius = brush.size * 0.5f * pressure.coerceIn(0.2f, 1.5f)
+                stampPaint.set(basePaint)
+                canvas.drawCircle(point.x, point.y, radius, stampPaint)
+            }
+            else -> {
+                val radius = brush.size * 0.5f * pressure.coerceIn(0.2f, 1.5f)
+                canvas.drawCircle(point.x, point.y, radius, basePaint)
             }
         }
     }

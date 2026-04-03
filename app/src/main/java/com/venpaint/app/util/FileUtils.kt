@@ -198,6 +198,23 @@ object FileUtils {
     }
 
     /**
+     * Save a bitmap directly to a specific file.
+     * Returns true on success, false on failure.
+     */
+    fun saveBitmap(file: File, bitmap: Bitmap): Boolean {
+        return try {
+            file.parentFile?.mkdirs()
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
      * Load a bitmap from a file path.
      */
     fun loadBitmap(file: File): Bitmap? {

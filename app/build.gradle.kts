@@ -63,6 +63,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // ViewPager2 and Fragment for Library screen tabs
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+
     // ZXing for QR code generation and scanning
     implementation("com.google.zxing:core:3.5.2")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
