@@ -1,0 +1,57 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme -->
+    <style name="Theme.VenPaint" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/venpaint_primary</item>
+        <item name="colorPrimaryDark">@color/venpaint_primary_dark</item>
+        <item name="colorAccent">@color/venpaint_accent</item>
+        <item name="android:windowBackground">@color/venpaint_background</item>
+        <item name="android:statusBarColor">@color/venpaint_transparent</item>
+        <item name="android:navigationBarColor">@color/venpaint_transparent</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!-- Fullscreen theme for main activity -->
+    <style name="Theme.VenPaint.Fullscreen" parent="Theme.VenPaint">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="p">shortEdges</item>
+    </style>
+
+    <!-- Panel dialog style -->
+    <style name="Theme.VenPaint.Panel" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="colorBackground">@color/venpaint_panel_bg</item>
+        <item name="android:background">@color/venpaint_surface</item>
+        <item name="android:windowBackground">@color/venpaint_surface</item>
+        <item name="colorPrimary">@color/venpaint_accent</item>
+        <item name="colorAccent">@color/venpaint_accent</item>
+        <item name="android:textColorPrimary">@color/venpaint_text_primary</item>
+        <item name="android:textColorSecondary">@color/venpaint_text_secondary</item>
+    </style>
+
+    <!-- Slider style -->
+    <style name="Widget.VenPaint.Slider" parent="Widget.MaterialComponents.slider">
+        <item name="thumbColor">@color/venpaint_slider_thumb</item>
+        <item name="tickVisible">false</item>
+    </style>
+
+    <!-- Toolbar button style -->
+    <style name="Widget.VenPaint.ToolButton" parent="Widget.MaterialComponents.ImageButton">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:tint">@color/venpaint_text_primary</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <!-- Text style for labels -->
+    <style name="TextAppearance.VenPaint.Label" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">@color/venpaint_text_secondary</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <!-- Text style for values -->
+    <style name="TextAppearance.VenPaint.Value" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textColor">@color/venpaint_text_primary</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+</resources>

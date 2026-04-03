@@ -1,85 +1,145 @@
-# VenPaint
+# VenPaint 🎨
 
-A professional drawing app for Android with brush QR code sharing, built with Flutter.
+A free, feature-rich Android painting app built with Kotlin. Create stunning digital art with multiple brush types, layers, blend modes, and more.
 
-## Features
+> **100% Free** • No login required • No premium features • Open source
 
-- **Multi-layer canvas** with full compositing, blend modes, and opacity control
-- **Professional brush engine** supporting pen, pencil, airbrush, watercolor, oil, and eraser
-- **Pressure-sensitive drawing** with customizable pressure graphs
-- **Brush QR code sharing** - share and import brushes via QR codes (ibisPaint IPBZ compatible)
-- **VPBZ/IPBZ codec** - generated QR codes are scannable by ibisPaint, and VenPaint scans ibisPaint brush QR codes
-- **IPv file import/export** - full project file format with layer data and metadata
-- **Color picker** with HSV wheel, RGB sliders, swatches, and recent colors
-- **Undo/redo** with up to 50 history states
-- **Multiple canvas presets** - phone, square, HD, A4, and custom sizes
-- **Gesture controls** - pinch-to-zoom, two-finger pan, and swipe gestures
+## ✨ Features
 
-## Technical Architecture
+### 🖌️ Brush System
+- **8 brush types**: Pen, Pencil, Airbrush, Watercolor, Flat Brush, Round Brush, Crayon, Eraser
+- Adjustable **size**, **opacity**, **hardness**, and **spacing**
+- **Pressure sensitivity** support (requires compatible stylus)
+- Smooth stroke rendering with **Bezier curves**
+- Save and load **custom brush presets**
 
-### State Management
-- **Provider pattern** (`ChangeNotifier`) for reactive canvas state updates
+### 📚 Layer System
+- Up to **100 layers** per project
+- **Blend modes**: Normal, Multiply, Screen, Overlay
+- Per-layer **opacity** control
+- **Add**, **delete**, **duplicate**, **merge**, and **reorder** layers
+- Toggle layer **visibility**
+- Layer **thumbnails** for quick identification
 
-### Drawing Engine
-- Custom pixel-level `DrawingEngine` with `CustomPainter` rendering
-- Supports multiple brush types: pen, pencil, airbrush, watercolor, oil, eraser
-- Flood fill, eyedropper, and selection tools
-- Layer compositing with alpha blending
+### 📱 Brush QR System
+- **Generate QR codes** from your custom brush settings
+- **Scan QR codes** to import brushes from other VenPaint users
+- **Partial ibisPaint compatibility**: Recognizes ibisPaint brush QR codes and offers to open them in the browser
+- Custom format: `VP:<base64-encoded-JSON>`
 
-### Brush QR Format (VPBZ)
-- Binary format: `VPBZ` magic (4B) + version (2B) + flags (2B) + uncompressed length (4B) + zlib-compressed JSON
-- Compatible with ibisPaint's IPBZ format
-- JSON includes: name, size, opacity, hardness, color, brushType, spacing, scatter, pressureGraph
+### 📁 Import & Export
+- **Import .ipv files** from ibisPaint (extracts layers from ZIP archives)
+- **Import images** (PNG, JPG, WEBP)
+- **Export as PNG** (lossless, with transparency)
+- **Export as JPG** (lossy, white background)
+- **Export as PSD** (Adobe Photoshop format)
+- **Save/Load projects** (.vpp format - ZIP with layer data + JSON metadata)
 
-### IPv File Format
-- Chunk-based binary format with 4-byte ID + 4-byte length + data + negative-length checksum
-- Required chunks: AddCanvas (0x01000100), MetaInfo (0x01000600), ManageLayer (0x03000600)
-- Layers stored as embedded PNG images
+### 🎯 Drawing Tools
+- **Zoom & Pan** with pinch-to-zoom gestures
+- **Double-tap** to reset view
+- **Fill tool** for quick area fills
+- **Undo/Redo** with up to 30 history states
+- Full **immersive mode** for maximum canvas space
+- **Checkerboard transparency** indicator
 
-## Project Structure
+## 🏗️ Architecture
 
 ```
-lib/
-├── main.dart                      # App entry point with theme and Provider setup
-├── models/
-│   ├── brush.dart                 # VenBrush model with VPBZ encoding
-│   ├── layer.dart                 # ArtLayer model with pixel manipulation
-│   └── canvas_state.dart          # CanvasState ChangeNotifier
-├── services/
-│   ├── drawing_engine.dart        # CustomPainter drawing engine
-│   ├── ipbz_service.dart          # VPBZ/IPBZ brush codec
-│   ├── ipv_service.dart           # IPv file import/export
-│   └── brush_qr_service.dart      # QR code generation/scanning
-└── ui/
-    ├── screens/
-    │   ├── home_screen.dart       # Gallery/home with templates and import
-    │   └── canvas_screen.dart     # Main drawing canvas with toolbars
-    └── widgets/
-        ├── brush_settings_panel.dart   # Brush type/parameter controls
-        ├── layer_panel.dart           # Layer management with drag reorder
-        ├── color_picker_widget.dart   # Color selection with HSV wheel
-        └── brush_qr_dialog.dart       # QR scan/create dialog
+VenPaint/
+├── app/src/main/java/com/venpaint/app/
+│   ├── MainActivity.kt          # Main activity with fullscreen UI
+│   ├── ui/                      # Custom Views & UI components
+│   │   ├── DrawingCanvas.kt     # Touch handling, zoom/pan, rendering
+│   │   ├── BrushSettingsPanel.kt # Sliders for brush parameters
+│   │   ├── LayerPanel.kt        # Layer list with controls
+│   │   ├── ColorPickerDialog.kt # HSV color picker with palette
+│   │   └── ToolBar.kt           # Bottom toolbar with tool buttons
+│   ├── engine/                  # Core rendering engine
+│   │   ├── BrushEngine.kt       # Brush stroke rendering (Bezier, stamps)
+│   │   ├── Layer.kt             # Layer data model with bitmap management
+│   │   ├── LayerManager.kt      # Layer stack operations
+│   │   └── DrawingHistory.kt    # Undo/redo with layer snapshots
+│   ├── brush/                   # Brush data & QR system
+│   │   ├── Brush.kt             # Brush parameters data class
+│   │   ├── BrushType.kt         # Brush type enum
+│   │   ├── BrushQRGenerator.kt  # QR code generation (ZXing)
+│   │   ├── BrushQRScanner.kt    # QR code scanning (ZXing)
+│   │   └── BrushManager.kt      # Brush preset save/load
+│   ├── io/                      # File I/O
+│   │   ├── IpvImporter.kt       # ibisPaint .ipv import
+│   │   ├── ProjectExporter.kt   # PNG/JPG/PSD export
+│   │   └── ProjectSaver.kt      # .vpp project save/load
+│   └── util/                    # Utilities
+│       ├── ColorUtils.kt        # Color conversion & manipulation
+│       └── FileUtils.kt         # File operations helpers
 ```
 
-## Getting Started
+## 🔧 Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| **Kotlin** | Primary language |
+| **Android SDK 24-34** | Target platform (Android 7.0+) |
+| **ZXing** | QR code generation & scanning |
+| **Gson** | JSON serialization |
+| **Coroutines** | Async operations |
+| **Material Components** | UI components |
+| **View system** | Maximum compatibility (non-Compose) |
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK >= 3.0.0
-- Android SDK with API level 24+
-- Kotlin plugin for Gradle
+- Android Studio Hedgehog (2023.1.1) or newer
+- JDK 17
+- Android SDK with API level 34
 
-### Building
+### Build
+
 ```bash
-flutter pub get
-flutter build apk --release
+# Clone the repository
+git clone https://github.com/yourusername/VenPaint.git
+cd VenPaint
+
+# Build debug APK
+./gradlew assembleDebug
+
+# The APK will be at: app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Running Tests
-```bash
-flutter test
-```
+### Install
+1. Transfer `app-debug.apk` to your Android device
+2. Enable "Install from unknown sources" in Settings
+3. Open the APK file to install
 
-## Package: `com.venpaint.app`
+## 📱 Usage
 
-## License
-MIT
+1. **Draw** on the canvas using the selected brush
+2. **Adjust brush** settings using the bottom panel (size, opacity, hardness)
+3. **Switch tools** using the bottom toolbar
+4. **Manage layers** by tapping the layers button
+5. **Undo/Redo** using the toolbar buttons
+6. **Save** your project or **Export** as PNG/JPG/PSD
+7. **Pinch to zoom**, **drag with two fingers** to pan
+8. **Double-tap** to reset the view
+
+## 🔄 ibisPaint Compatibility
+
+VenPaint provides partial compatibility with ibisPaint files:
+
+- **Import .ipv files**: Opens ZIP-based .ipv files and extracts layer data
+- **Scan ibisPaint QR codes**: Recognizes ibisPaint brush URLs and opens them in the browser
+
+## 📋 Minimum Requirements
+
+- Android 7.0 (API 24) or higher
+- Camera (for QR scanning - optional)
+- Storage permission (for saving/exporting - Android 9 and below)
+
+## 📜 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+**Built with ❤️ for the Android art community**

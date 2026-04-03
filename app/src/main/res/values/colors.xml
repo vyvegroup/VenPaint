@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="venpaint_primary">#FF1B1B2F</color>
+    <color name="venpaint_primary_dark">#FF0F0F1A</color>
+    <color name="venpaint_accent">#FFE94560</color>
+    <color name="venpaint_surface">#FF2A2A3D</color>
+    <color name="venpaint_surface_light">#FF3A3A50</color>
+    <color name="venpaint_background">#FF16161A</color>
+    <color name="venpaint_text_primary">#FFFFFFFF</color>
+    <color name="venpaint_text_secondary">#B0B0C0</color>
+    <color name="venpaint_text_hint">#808090</color>
+    <color name="venpaint_toolbar_bg">#CC1B1B2F</color>
+    <color name="venpaint_divider">#FF404060</color>
+    <color name="venpaint_transparent">#00000000</color>
+    <color name="venpaint_black">#FF000000</color>
+    <color name="venpaint_white">#FFFFFFFF</color>
+    <color name="venpaint_red">#FFFF0000</color>
+    <color name="venpaint_green">#FF00FF00</color>
+    <color name="venpaint_blue">#FF0000FF</color>
+    <color name="venpaint_yellow">#FFFFFF00</color>
+    <color name="venpaint_cyan">#FF00FFFF</color>
+    <color name="venpaint_magenta">#FFFF00FF</color>
+    <color name="venpaint_selected">#55E94560</color>
+    <color name="venpaint_panel_bg">#E61B1B2F</color>
+    <color name="venpaint_slider_track">#FF3A3A50</color>
+    <color name="venpaint_slider_thumb">#FFE94560</color>
+</resources>

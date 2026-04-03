@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background circle -->
+    <path
+        android:fillColor="#1B1B2F"
+        android:pathData="M54,54m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
+
+    <!-- Palette shape -->
+    <path
+        android:fillColor="#E94560"
+        android:pathData="M54,22C36.3,22 22,36.3 22,54C22,71.7 36.3,86 54,86C56.2,86 58,84.2 58,82C58,80.9 57.6,79.9 56.8,79.1C56.1,78.3 55.7,77.2 55.7,76.1C55.7,73.7 57.7,71.7 60.1,71.7L64,71.7C73.9,71.7 82,63.6 82,53.7C82,36.3 69.6,22 54,22Z" />
+
+    <!-- Paint dots -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,42m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M35,60m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+    <path
+        android:fillColor="#00CED1"
+        android:pathData="M53,36m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M71,42m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+
+    <!-- Brush stroke accent -->
+    <path
+        android:fillColor="#1B1B2F"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M42,72L68,48" />
+</vector>
