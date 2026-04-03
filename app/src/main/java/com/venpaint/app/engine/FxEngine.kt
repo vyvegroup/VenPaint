@@ -325,7 +325,7 @@ class FxEngine(private val context: Context) {
         val maxR = sqrt(cx * cx + cy * cy)
         val innerR = maxR * (1f - intensity / 100f * 0.7f)
 
-        val colorArr = intArrayOf(0x00000000, 0xAA000000, 0xFF000000)
+        val colorArr = longArrayOf(0x00000000L, 0xAA000000L, 0xFF000000L)
         val shader = android.graphics.RadialGradient(cx, cy, innerR, cx, cy, maxR,
             colorArr, null, android.graphics.Shader.TileMode.CLAMP)
         val paint = android.graphics.Paint().apply {
