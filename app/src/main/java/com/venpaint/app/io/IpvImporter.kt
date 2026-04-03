@@ -268,39 +268,61 @@ class IpvImporter(private val context: Context) {
 
     /**
      * Parse Image chunk (0x01000500) data and extract the embedded PNG bitmap.
-     * Data format:
+     *
+     * Real .ipv format (from reverse engineering):
      * - 8 bytes: timestamp as BE double
-     * - 4 bytes: some int
-     * - 6 bytes: padding
-     * - 4 bytes: png data length as BE u32
-     * - N bytes: PNG data
+     * - 4 bytes: flags (0xFFFFFFFF = real image, 0x00000000 = preview)
+     * - 4 bytes: unknown
+     * - 2 bytes: unknown
+     * - 2 bytes: unknown
+     * - variable: PNG data (search for PNG signature 89 50 4E 47)
+     *
+     * The PNG may not be at a fixed offset - we search for the PNG signature.
      */
     private fun parseImageChunk(data: ByteArray): Bitmap? {
         return try {
-            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
+            // Search for PNG signature within the chunk data
+            val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+            var pngStart = -1
+            for (i in 0..minOf(data.size - 8, 200)) {
+                var found = true
+                for (j in PNG_SIGNATURE.indices) {
+                    if (data[i + j] != PNG_SIGNATURE[j]) {
+                        found = false
+                        break
+                    }
+                }
+                if (found) {
+                    pngStart = i
+                    break
+                }
+            }
 
-            // 8 bytes: timestamp as BE double
-            buf.double
-
-            // 4 bytes: some int
-            buf.int
-
-            // 6 bytes: padding
-            buf.position(buf.position() + 6)
-
-            // 4 bytes: png data length as BE u32
-            val pngLength = buf.int
-
-            if (pngLength <= 0 || pngLength > data.size - buf.position()) {
-                Log.w(TAG, "Invalid PNG length in Image chunk: $pngLength")
+            if (pngStart < 0) {
+                Log.w(TAG, "No PNG signature found in Image chunk (size=${data.size})")
                 return null
             }
 
-            // Read PNG data
-            val pngData = ByteArray(pngLength)
-            buf.get(pngData)
+            // Extract PNG data from signature to IEND
+            val IEND_SIGNATURE = byteArrayOf(0x49, 0x45, 0x4E, 0x44)
+            var pngEnd = -1
+            for (i in pngStart until data.size - 4) {
+                if (data[i] == IEND_SIGNATURE[0] && data[i+1] == IEND_SIGNATURE[1] &&
+                    data[i+2] == IEND_SIGNATURE[2] && data[i+3] == IEND_SIGNATURE[3]) {
+                    // IEND chunk: type(4) + CRC(4) = 8 bytes after IEND marker
+                    pngEnd = i + 8
+                    break
+                }
+            }
 
-            // Decode PNG
+            if (pngEnd < 0 || pngEnd <= pngStart) {
+                // Fallback: use rest of data as PNG
+                pngEnd = data.size
+            }
+
+            val pngData = data.copyOfRange(pngStart, pngEnd)
+            Log.d(TAG, "Extracted PNG from Image chunk: offset=$pngStart, size=${pngData.size}")
+
             BitmapFactory.decodeByteArray(pngData, 0, pngData.size)
         } catch (e: Exception) {
             Log.w(TAG, "Failed to parse Image chunk", e)
@@ -310,19 +332,30 @@ class IpvImporter(private val context: Context) {
 
     /**
      * Parse MetaInfo chunk (0x01000600) data to extract artwork name.
-     * Data format:
-     * - 8 bytes: timestamp as BE double
-     * - String: artwork name (or metadata)
+     *
+     * MetaInfo has a complex structure. The artwork name is embedded as a
+     * formatted string (BE u16 length + UTF-8) somewhere in the data.
+     * We search for readable strings to find the artwork name.
      */
     private fun parseMetaInfo(data: ByteArray): String? {
         return try {
-            val buf = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN)
-
-            // 8 bytes: timestamp as BE double
-            buf.double
-
-            // String: artwork name
-            readString(buf)
+            // Search for readable UTF-8 strings in the metadata
+            var bestName: String? = null
+            var i = 0
+            while (i < data.size - 2) {
+                val strLen = ((data[i].toInt() and 0xFF) shl 8) or (data[i + 1].toInt() and 0xFF)
+                if (strLen in 3..200 && i + 2 + strLen <= data.size) {
+                    val candidate = String(data, i + 2, strLen, Charsets.UTF_8)
+                    // Check if it's a readable name (not binary data)
+                    if (candidate.all { ch -> ch.isLetterOrDigit() || ch.isWhitespace() || ch in "._-!@#$%^&*()" }) {
+                        if (bestName == null || candidate.length > bestName.length) {
+                            bestName = candidate
+                        }
+                    }
+                }
+                i += 1
+            }
+            bestName
         } catch (e: Exception) {
             Log.w(TAG, "Failed to parse MetaInfo chunk", e)
             null

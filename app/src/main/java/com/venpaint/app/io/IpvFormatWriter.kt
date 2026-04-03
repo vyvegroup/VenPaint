@@ -230,12 +230,14 @@ class IpvFormatWriter {
 
     /**
      * Write an Image chunk (0x01000500) containing layer PNG data.
-     * Data format:
+     *
+     * Real .ipv format (from reverse engineering actual .ipv files):
      * - 8 bytes: timestamp as BE double
-     * - 4 bytes: some int (1)
-     * - 6 bytes: padding/unknown (0x000000000000)
-     * - 4 bytes: png data length as BE u32
-     * - N bytes: PNG data
+     * - 4 bytes: 0xFFFFFFFF (flag: real image data, not preview)
+     * - 4 bytes: 0x00000000 (unknown)
+     * - 2 bytes: 0x0000 (unknown)
+     * - 2 bytes: 0x0002 (unknown, may be related to canvas)
+     * - N bytes: PNG data (standard PNG starting with 89 50 4E 47)
      */
     private fun writeImageChunk(
         output: ByteArrayOutputStream,
@@ -252,16 +254,21 @@ class IpvFormatWriter {
         // Timestamp as BE double (8 bytes)
         data.write(doubleToBytesBE(timestamp))
 
-        // Some int = 1 (4 bytes)
-        data.write(intToBytesBE(1))
+        // Flags: 0xFFFFFFFF = real image data
+        data.write(intToBytesBE(-1))
 
-        // 6 bytes padding (0x000000000000)
-        data.write(ByteArray(6))
+        // Unknown: 0x00000000
+        data.write(intToBytesBE(0))
 
-        // PNG data length as BE u32 (4 bytes)
-        data.write(intToBytesBE(pngData.size))
+        // Unknown: 2 bytes
+        data.write(0x00)
+        data.write(0x00)
 
-        // PNG data
+        // Unknown: 2 bytes (0x0002 in real files)
+        data.write(0x00)
+        data.write(0x02)
+
+        // PNG data (standard PNG)
         data.write(pngData)
 
         writeChunk(output, CHUNK_IMAGE, data.toByteArray())
