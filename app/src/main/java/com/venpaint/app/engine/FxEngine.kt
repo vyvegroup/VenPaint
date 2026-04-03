@@ -234,9 +234,9 @@ class FxEngine(private val context: Context) {
             val r = Color.red(pixels[i])
             val g = Color.green(pixels[i])
             val b = Color.blue(pixels[i])
-            val sr = min(255, (r * 0.393f + g * 0.769f + b * 0.189f)).toInt()
-            val sg = min(255, (r * 0.349f + g * 0.686f + b * 0.168f)).toInt()
-            val sb = min(255, (r * 0.272f + g * 0.534f + b * 0.131f)).toInt()
+            val sr = minOf(255, (r * 0.393f + g * 0.769f + b * 0.189f).toInt())
+            val sg = minOf(255, (r * 0.349f + g * 0.686f + b * 0.168f).toInt())
+            val sb = minOf(255, (r * 0.272f + g * 0.534f + b * 0.131f).toInt())
             pixels[i] = Color.argb(a, sr, sg, sb)
         }
         result.setPixels(pixels, 0, result.width, 0, 0, result.width, result.height)
@@ -303,16 +303,13 @@ class FxEngine(private val context: Context) {
             isFilterBitmap = false
         }
         canvas.drawBitmap(source, 0f, 0f, null)
-        val scaled = Bitmap.createScaledBitmap(source, 
-            (source.width / pixelSize).coerceAtLeast(1),
-            (source.height / pixelSize).coerceAtLeast(1), false)
-        canvas.drawBitmap(scaled, 0f, 0f,
-            android.graphics.Paint().apply {
-                isFilterBitmap = false
-            })
-        // Scale back up without smoothing
+        val smallW = (source.width / pixelSize).coerceAtLeast(1)
+        val smallH = (source.height / pixelSize).coerceAtLeast(1)
+        val scaled = Bitmap.createScaledBitmap(source, smallW, smallH, false)
         val scaledBack = Bitmap.createScaledBitmap(scaled, source.width, source.height, false)
-        scaledBack.copyTo(result)
+        val pixels = IntArray(source.width * source.height)
+        scaledBack.getPixels(pixels, 0, source.width, 0, 0, source.width, source.height)
+        result.setPixels(pixels, 0, result.width, 0, 0, result.width, result.height)
         scaled.recycle()
         scaledBack.recycle()
         return result
@@ -328,9 +325,9 @@ class FxEngine(private val context: Context) {
         val maxR = sqrt(cx * cx + cy * cy)
         val innerR = maxR * (1f - intensity / 100f * 0.7f)
 
+        val colorArr = intArrayOf(0x00000000, 0xAA000000, 0xFF000000)
         val shader = android.graphics.RadialGradient(cx, cy, innerR, cx, cy, maxR,
-            intArrayOf(0x00000000.toInt(), 0xAA000000.toInt(), 0xFF000000.toInt()),
-            null, android.graphics.Shader.TileMode.CLAMP)
+            colorArr, null, android.graphics.Shader.TileMode.CLAMP)
         val paint = android.graphics.Paint().apply {
             setShader(shader)
         }
